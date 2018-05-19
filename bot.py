@@ -43,7 +43,7 @@ def updateDatabase(id, firstName, lastName, username):
     if db_users.search(where('chatId') == id):
         db_users.update({'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
     else:
-        db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username})
+        db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username, 'warns': "0"})
 
 
 def getUserInfo(msg):
@@ -84,11 +84,19 @@ def handle(msg):
                 text_split = text.split(" ", 2)
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                previousWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
+                db_users.update({'warns': str(previousWarns+1)}, where('chatId') == selectedUserData)
+                userWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
                 try:
                     reason = text_split[2]
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been warned for <b>"+reason+"</b>."), parse_mode="HTML")
+                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been warned ["+str(userWarns)+"/3] for <b>"+reason+"</b>."), parse_mode="HTML")
                 except IndexError:
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been warned."))
+                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been warned ["+str(userWarns)+"/3]."))
+                if userWarns >= 3:
+                    bot.restrictChatMember(group, selectedUserData, until_date=int(time.time() + 3600))
+                    db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
+                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been muted until the next hour."))
+
 
             elif text.startswith("/mute @"):
                 text_split = text.split(" ", 2)
@@ -131,7 +139,7 @@ def handle(msg):
 
             elif text == "/reload":
                 reloadDatabases()
-                groupUC = str(bot.getChatMembersCount(group))
+                groupUC = str(bot.getChatMembersCount(group)-1)
                 registeredUC = str(db_users.__len__())
                 bot.sendMessage(group, "✅ <b>Bot reloaded!</b>\nUsers Found: "+registeredUC+"/"+groupUC+".", "HTML")
 
