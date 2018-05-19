@@ -1,4 +1,5 @@
 import telepot, time
+from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from tinydb import TinyDB, where
 bot = None
 group = None
@@ -41,9 +42,22 @@ def reloadDatabases():
 
 def updateDatabase(id, firstName, lastName, username):
     if db_users.search(where('chatId') == id):
-        db_users.update({'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
+        db_users.update({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
     else:
         db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username, 'warns': "0"})
+
+
+def keyboard(type, user, msg_id):
+    msg_id = str(msg_id)
+    user = str(user)
+    data = None
+    if type == "warn":
+        data = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="❎ Unwarn", callback_data="unwarn#"+msg_id+"@"+user)]])
+    elif type == "mute":
+        data = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🔈 Unmute", callback_data="unmute#"+msg_id+"@"+user)]])
+    elif type == "ban":
+        data = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="✅️ Unban", callback_data="unban#"+msg_id+"@"+user)]])
+    return data
 
 
 def getUserInfo(msg):
@@ -85,18 +99,17 @@ def handle(msg):
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 previousWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
-                db_users.update({'warns': str(previousWarns+1)}, where('chatId') == selectedUserData)
+                db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == selectedUserData)
                 userWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
                 try:
                     reason = text_split[2]
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been warned ["+str(userWarns)+"/3] for <b>"+reason+"</b>."), parse_mode="HTML")
+                    bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/3] for <b>" + reason + "</b>."), parse_mode="HTML")
                 except IndexError:
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been warned ["+str(userWarns)+"/3]."))
+                    bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/3]."))
                 if userWarns >= 3:
                     bot.restrictChatMember(group, selectedUserData, until_date=int(time.time() + 3600))
                     db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been muted until the next hour."))
-
+                    bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted until the next hour."))
 
             elif text.startswith("/mute @"):
                 text_split = text.split(" ", 2)
@@ -105,9 +118,9 @@ def handle(msg):
                 bot.restrictChatMember(group, selectedUserData, until_date=int(time.time() + 3600))
                 try:
                     reason = text_split[2]
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been muted for <b>"+reason+"</b> until the next hour."), parse_mode="HTML")
+                    bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML")
                 except IndexError:
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been muted until the next hour."))
+                    bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted until the next hour."))
 
             elif text.startswith("/kick @"):
                 text_split = text.split(" ", 2)
@@ -118,9 +131,9 @@ def handle(msg):
                 bot.unbanChatMember(group, selectedUserData)
                 try:
                     reason = text_split[2]
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML")
+                    bot.sendMessage(group, str("❗️️ "+selectedUser+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML")
                 except IndexError:
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been kicked."))
+                    bot.sendMessage(group, str("❗️️ "+selectedUser+" has been kicked."))
 
             elif text.startswith("/ban @"):
                 text_split = text.split(" ", 2)
@@ -129,13 +142,36 @@ def handle(msg):
                 bot.kickChatMember(group, selectedUserData)
                 try:
                     reason = text_split[2]
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been banned for <b>"+reason+"</b>."), parse_mode="HTML")
+                    bot.sendMessage(group, str("🚷 "+selectedUser+" has been banned for <b>"+reason+"</b>."), parse_mode="HTML")
                 except IndexError:
-                    bot.sendMessage(group, str("⚠️ "+selectedUser+" has been banned."))
+                    bot.sendMessage(group, str("🚷 "+selectedUser+" has been banned."))
+
+            elif text.startswith("/unban @"):
+                text_split = text.split(" ", 1)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                bot.unbanChatMember(group, selectedUserData)
+                bot.sendMessage(group, "✅️ "+str(selectedUser)+" unbanned.")
+
+            elif text.startswith("/unwarn @"):
+                text_split = text.split(" ", 1)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                previousWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
+                if previousWarns > 0:
+                    db_users.update({'warns': str(previousWarns-1)}, where('chatId') == selectedUserData)
+                    bot.sendMessage(group, "❎ "+str(selectedUser)+" unwarned.\nHe now has "+str(previousWarns-1)+" warns.")
+
+            elif text.startswith("/unmute @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                bot.restrictChatMember(group, selectedUserData, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
+                bot.sendMessage(group, str("🔈 " + selectedUser + " unmuted."))
 
             elif text.startswith("/tell "):
-                text = text.replace("/tell ", "")
-                bot.sendMessage(group, text, parse_mode="HTML")
+                text_split = text.split(" ", 1)
+                bot.sendMessage(group, text_split[1], parse_mode="HTML")
 
             elif text == "/reload":
                 reloadDatabases()
