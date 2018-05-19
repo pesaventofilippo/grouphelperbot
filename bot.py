@@ -9,6 +9,7 @@ groupAdmins = []
 def initialize():
     global bot
     global group
+    global groupAdmins
     try:
         f = open("bot_token.txt", "r")
         token = str(f.readline())
@@ -29,11 +30,20 @@ def initialize():
         group = int(input("Group ID File not found. Please insert the group Chat ID: "))
         f.write(str(group))
         f.close()
+    groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
+    print("Bot started...")
 
 
 def reloadDatabases():
     global groupAdmins
     groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
+
+
+def updateDatabase(id, firstName, lastName, username):
+    if db_users.search(where('chatId') == id):
+        db_users.update({'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
+    else:
+        db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username})
 
 
 def getUserInfo(msg):
@@ -64,10 +74,7 @@ def handle(msg):
     chatId, msgId, text, from_id, from_firstName, from_lastName, from_username = getUserInfo(msg)
 
     if chatId == group:
-        if db_users.search(where('chatId') == from_id):
-            db_users.update({'chatId': from_id, 'firstName': from_firstName, 'lastName': from_lastName, 'username': from_username})
-        else:
-            db_users.insert({'chatId': from_id, 'firstName': from_firstName, 'lastName': from_lastName, 'username': from_username})
+        updateDatabase(from_id, from_firstName, from_lastName, from_username)
 
         if text.startswith("/"):
             bot.deleteMessage((group, msgId))
@@ -130,7 +137,6 @@ def handle(msg):
 
 
 initialize()
-reloadDatabases()
 bot.message_loop({'chat': handle})
 while 1:
     time.sleep(1)
