@@ -1,16 +1,10 @@
 import telepot, time
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from tinydb import TinyDB, where
-bot = None
-group = None
 db_users = TinyDB('users.json')
-groupAdmins = []
 
 
 def initialize():
-    global bot
-    global group
-    global groupAdmins
     try:
         f = open("bot_token.txt", "r")
         token = str(f.readline())
@@ -33,11 +27,14 @@ def initialize():
         f.close()
     groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
     print("Bot started...")
+    return bot, group, groupAdmins
 
 
 def reloadDatabases():
     global groupAdmins
+    global groupUserCount
     groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
+    groupUserCount = int(bot.getChatMembersCount(group))
 
 
 def updateDatabase(id, firstName, lastName, username):
@@ -89,6 +86,8 @@ def handle(msg):
 
     if chatId == group:
         updateDatabase(from_id, from_firstName, from_lastName, from_username)
+        if (db_users.search(where('chatId') == from_id) == False) and (text == "") and (bot.getChatMembersCount(group) > groupUserCount):
+            bot.sendMessage(group, "Hi, <b>"+from_firstName+"</b>!\nWelcome in the "+bot.getChat(group)['title']+" group!", "HTML")
 
         if text.startswith("/"):
             bot.deleteMessage((group, msgId))
@@ -175,12 +174,11 @@ def handle(msg):
 
             elif text == "/reload":
                 reloadDatabases()
-                groupUC = str(bot.getChatMembersCount(group)-1)
-                registeredUC = str(db_users.__len__())
-                bot.sendMessage(group, "✅ <b>Bot reloaded!</b>\nUsers Found: "+registeredUC+"/"+groupUC+".", "HTML")
+                bot.sendMessage(group, "✅ <b>Bot reloaded!</b>\nAdmins Found: "+str(groupAdmins.__len__())+".", "HTML")
 
 
-initialize()
+bot, group, groupAdmins = initialize()
 bot.message_loop({'chat': handle})
 while 1:
-    time.sleep(1)
+    groupUserCount = bot.getChatMembersCount(group)
+    time.sleep(60)
