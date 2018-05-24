@@ -86,7 +86,7 @@ def handle(msg):
 
     if chatId == group:
         updateDatabase(from_id, from_firstName, from_lastName, from_username)
-        if (db_users.search(where('chatId') == from_id) == False) and (text == "") and (bot.getChatMembersCount(group) > groupUserCount):
+        if (db_users.search(where('chatId') == from_id) == False) and (bot.getChatMembersCount(group) > groupUserCount):
             bot.sendMessage(group, "Hi, <b>"+from_firstName+"</b>!\nWelcome in the "+bot.getChat(group)['title']+" group!", "HTML")
 
         if text.startswith("/"):
