@@ -26,20 +26,19 @@ def initialize():
         f.write(str(group))
         f.close()
     groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
+    groupUserCount = bot.getChatMembersCount(group)
     print("Bot started...")
-    return bot, group, groupAdmins
+    return bot, group, groupAdmins, groupUserCount
 
 
 def reloadDatabases():
     global groupAdmins
-    global groupUserCount
     groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
-    groupUserCount = int(bot.getChatMembersCount(group))
 
 
 def updateDatabase(id, firstName, lastName, username):
     if db_users.search(where('chatId') == id):
-        db_users.update({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
+        db_users.update({'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
     else:
         db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username, 'warns': "0"})
 
@@ -83,12 +82,14 @@ def getUserInfo(msg):
 
 def handle(msg):
     chatId, msgId, text, from_id, from_firstName, from_lastName, from_username = getUserInfo(msg)
+    global groupUserCount
 
     if chatId == group:
         updateDatabase(from_id, from_firstName, from_lastName, from_username)
+
         if bot.getChatMembersCount(group) > groupUserCount:
             bot.sendMessage(group, "Hi, <b>"+from_firstName+"</b>!\nWelcome in the "+bot.getChat(group)['title']+" group!", "HTML")
-            reloadDatabases()
+        groupUserCount = bot.getChatMembersCount(group)
 
         if text.startswith("/"):
             bot.deleteMessage((group, msgId))
@@ -178,8 +179,7 @@ def handle(msg):
                 bot.sendMessage(group, "✅ <b>Bot reloaded!</b>\nAdmins Found: "+str(groupAdmins.__len__())+".", "HTML")
 
 
-bot, group, groupAdmins = initialize()
+bot, group, groupAdmins, groupUserCount = initialize()
 bot.message_loop({'chat': handle})
-while 1:
-    groupUserCount = bot.getChatMembersCount(group)
+while True:
     time.sleep(60)
