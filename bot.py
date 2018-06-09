@@ -60,6 +60,7 @@ def getUserInfo(msg):
     chatId = int(msg['chat']['id'])
     msgId = int(msg['message_id'])
     from_id = int(msg['from']['id'])
+
     try:
         text = str(msg['text'])
     except KeyError:
@@ -77,11 +78,38 @@ def getUserInfo(msg):
     except KeyError:
         from_username = ""
 
-    return chatId, msgId, text, from_id, from_firstName, from_lastName, from_username
+    try:
+        x = msg['reply_to_message']
+        isReply = True
+        reply_msgId = int(msg['reply_to_message']['message_id'])
+        reply_fromId = int(msg['reply_to_message']['from']['id'])
+        try:
+            reply_firstName = str(msg['reply_to_message']['from']['first_name'])
+        except KeyError:
+            reply_firstName = ""
+        try:
+            reply_lastName = str(msg['reply_to_message']['from']['last_name'])
+        except KeyError:
+            reply_lastName = ""
+        try:
+            reply_username = str(msg['reply_to_message']['from']['username'])
+        except KeyError:
+            reply_username = ""
+
+    except KeyError:
+        isReply = False
+        reply_msgId = None
+        reply_fromId = None
+        reply_firstName = None
+        reply_lastName = None
+        reply_username = None
+
+
+    return chatId, msgId, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username
 
 
 def handle(msg):
-    chatId, msgId, text, from_id, from_firstName, from_lastName, from_username = getUserInfo(msg)
+    chatId, msgId, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username = getUserInfo(msg)
     global groupUserCount
 
     if chatId == group:
@@ -89,6 +117,7 @@ def handle(msg):
 
         if bot.getChatMembersCount(group) > groupUserCount:
             bot.sendMessage(group, "Hi, <b>"+from_firstName+"</b>!\nWelcome in the "+bot.getChat(group)['title']+" group!", "HTML")
+
         groupUserCount = bot.getChatMembersCount(group)
 
         if text.startswith("/"):
@@ -108,7 +137,7 @@ def handle(msg):
                 except IndexError:
                     bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/3]."))
                 if userWarns >= 3:
-                    bot.restrictChatMember(group, selectedUserData, until_date=int(time.time() + 3600))
+                    bot.restrictChatMember(group, selectedUserData, until_date=time.time() + 3600)
                     db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
                     bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted until the next hour."))
 
@@ -116,7 +145,7 @@ def handle(msg):
                 text_split = text.split(" ", 2)
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
-                bot.restrictChatMember(group, selectedUserData, until_date=int(time.time() + 3600))
+                bot.restrictChatMember(group, selectedUserData, until_date=time.time() + 3600)
                 try:
                     reason = text_split[2]
                     bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML")
@@ -128,7 +157,7 @@ def handle(msg):
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 bot.kickChatMember(group, selectedUserData)
-                time.sleep(0.1)
+                time.sleep(0.5)
                 bot.unbanChatMember(group, selectedUserData)
                 try:
                     reason = text_split[2]
@@ -172,11 +201,70 @@ def handle(msg):
 
             elif text.startswith("/tell "):
                 text_split = text.split(" ", 1)
-                bot.sendMessage(group, text_split[1], parse_mode="HTML")
+                bot.sendMessage(group, text_split[1], parse_mode="HTML", reply_to_message_id=reply_msgId)
 
             elif text == "/reload":
                 reloadDatabases()
                 bot.sendMessage(group, "✅ <b>Bot reloaded!</b>\nAdmins Found: "+str(groupAdmins.__len__())+".", "HTML")
+
+
+
+
+            elif isReply:
+
+                if text.startswith("/warn"):
+                    previousWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
+                    db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == reply_fromId)
+                    userWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
+                    try:
+                        reason = text.split(" ", 1)[1]
+                        bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/3] for <b>" + reason + "</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                    except IndexError:
+                        bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/3]."), reply_to_message_id=reply_msgId)
+                    if userWarns >= 3:
+                        bot.restrictChatMember(group, reply_fromId, until_date=time.time() + 3600)
+                        db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
+                        bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been muted until the next hour."), reply_to_message_id=reply_msgId)
+
+                elif text.startswith("/mute"):
+                    bot.restrictChatMember(group, reply_fromId, until_date=time.time() + 3600)
+                    try:
+                        reason = text.split(" ", 1)[1]
+                        bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                    except IndexError:
+                        bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been muted until the next hour."), reply_to_message_id=reply_msgId)
+
+                elif text.startswith("/kick"):
+                    bot.kickChatMember(group, reply_fromId)
+                    time.sleep(0.5)
+                    bot.unbanChatMember(group, reply_fromId)
+                    try:
+                        reason = text.split(" ", 1)[1]
+                        bot.sendMessage(group, str("❗️️ "+reply_firstName+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                    except IndexError:
+                        bot.sendMessage(group, str("❗️️ "+reply_firstName+" has been kicked."), reply_to_message_id=reply_msgId)
+
+                elif text.startswith("/ban"):
+                    bot.kickChatMember(group, reply_fromId)
+                    try:
+                        reason = text.split(" ", 1)[1]
+                        bot.sendMessage(group, str("🚷 "+reply_firstName+" has been banned for <b>"+reason+"</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                    except IndexError:
+                        bot.sendMessage(group, str("🚷 "+reply_firstName+" has been banned."), reply_to_message_id=reply_msgId)
+
+                elif text.startswith("/unban"):
+                    bot.unbanChatMember(group, reply_fromId)
+                    bot.sendMessage(group, "✅️ "+str(reply_firstName)+" unbanned.", reply_to_message_id=reply_msgId)
+
+                elif text.startswith("/unwarn"):
+                    previousWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
+                    if previousWarns > 0:
+                        db_users.update({'warns': str(previousWarns-1)}, where('chatId') == reply_fromId)
+                        bot.sendMessage(group, "❎ "+reply_firstName+" unwarned.\nHe now has "+str(previousWarns-1)+" warns.", reply_to_message_id=reply_msgId)
+
+                elif text.startswith("/unmute"):
+                    bot.restrictChatMember(group, reply_fromId, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
+                    bot.sendMessage(group, str("🔈 " + reply_firstName + " unmuted."), reply_to_message_id=reply_msgId)
 
 
 bot, group, groupAdmins, groupUserCount = initialize()
