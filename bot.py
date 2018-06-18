@@ -1,4 +1,4 @@
-import telepot, time
+﻿import telepot, time
 from tinydb import TinyDB, where
 db_users = TinyDB('users.json')
 
@@ -259,13 +259,14 @@ def handle(msg):
         # Normal user message
         cmdtext = text.replace(myusername, "")
         if cmdtext == "/staff":
-            message = "👮🏻‍♀️ <b>GROUP STAFF</b> 👮🏻‍♀"
-            message += "\n⚜️ <b>Admins</b>"
+            message = "⚜️ <b>GROUP STAFF</b> ⚜️"
+            message += "\n👮🏻‍♀ <b>Admins</b>"
             for i in groupAdmins:
                 try:
-                    message += "\n  @" + bot.getChatMember(group, i)['username']
+                    message += "\n  @" + bot.getChatMember(group, i)['user']['username']
                 except KeyError:
-                    message += "\n  " + bot.getChatMember(group, i)['first_name']
+                    message += "\n  " + bot.getChatMember(group, i)['user']['first_name']
+            bot.sendMessage(group, message, parse_mode="HTML")
 
 
 bot, group, groupAdmins, groupUserCount, myusername = initialize()
