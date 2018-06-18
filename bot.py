@@ -295,12 +295,12 @@ def handle(msg):
                 elif text.startswith("/helper"):
                     if not isAdmin(reply_fromId):
                         updateAdminDatabase(reply_fromId, "helper")
-                        bot.sendMessage(group, str("⛑ " + reply_firstName + " is now <b>Helper</b>."), "HTML")
+                        bot.sendMessage(group, str("⛑ " + reply_firstName + " is now <b>Helper</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
 
                 elif text.startswith("/unhelper"):
                     if reply_fromId in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
                         db_admins.remove(where('chatId') == reply_fromId)
-                        bot.sendMessage(group, str("⛑ " + reply_firstName + " removed from <b>Helpers</b>."), "HTML")
+                        bot.sendMessage(group, str("⛑ " + reply_firstName + " removed from <b>Helpers</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
 
 
         # Normal user message
@@ -308,21 +308,21 @@ def handle(msg):
         if cmdtext == "/staff":
             message = "🔰️ <b>GROUP STAFF</b> 🔰️"
 
-            message += "\n\n    ⚜️ <b>Founder</b>"
+            message += "\n\n  ⚜️ <b>Founder</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n\n    👮🏻‍♀ <b>Admins</b>"
+            message += "\n\n  👮🏻‍♀ <b>Admins</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n\n    ⛑ <b>Helpers</b>"
+            message += "\n\n  ⛑ <b>Helpers</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
