@@ -1,6 +1,7 @@
 ﻿import telepot, time
 from tinydb import TinyDB, where
 db_users = TinyDB('users.json')
+db_admins = TinyDB('admins.json')
 
 
 def initialize():
@@ -24,19 +25,32 @@ def initialize():
         group = int(input("Group ID File not found. Please insert the group Chat ID: "))
         f.write(str(group))
         f.close()
-    groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
+
+    reloadAdmins()
     groupUserCount = bot.getChatMembersCount(group)
     myusername = "@" + bot.getMe()['username']
     print("Bot started...")
-    return bot, group, groupAdmins, groupUserCount, myusername
+    return bot, group, groupUserCount, myusername
 
 
-def reloadDatabases():
-    global groupAdmins
-    groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
+def reloadAdmins():
+    for x in bot.getChatAdministrators(group):
+        if x['user']['is_bot']:
+            updateAdminDatabase(x['user']['id'], "bot")
+        elif x['status'] == "administrator":
+            updateAdminDatabase(x['user']['id'], "admin")
+        elif x['status'] == "creator":
+            updateAdminDatabase(x['user']['id'], "creator")
 
 
-def updateDatabase(id, firstName, lastName, username):
+def updateAdminDatabase(id, status):
+    if db_admins.search(where('chatId') == id):
+        db_admins.update({'status': status}, where('chatId') == id)
+    else:
+        db_admins.insert({'chatId': id, 'status': status})
+
+
+def updateUserDatabase(id, firstName, lastName, username):
     if db_users.search(where('chatId') == id):
         db_users.update({'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
     else:
@@ -95,12 +109,21 @@ def getUserInfo(msg):
     return chatId, msgId, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username
 
 
+def isAdmin(chatId):
+    if chatId in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
+        return True
+    elif chatId in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
+        return True
+    else:
+        return False
+
+
 def handle(msg):
     chatId, msgId, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username = getUserInfo(msg)
     global groupUserCount
 
     if chatId == group:
-        updateDatabase(from_id, from_firstName, from_lastName, from_username)
+        updateUserDatabase(from_id, from_firstName, from_lastName, from_username)
 
         # Welcoming message
         if bot.getChatMembersCount(group) > groupUserCount:
@@ -113,7 +136,7 @@ def handle(msg):
             bot.deleteMessage((group, msgId))
 
         # Admin message
-        if from_id in groupAdmins:
+        if isAdmin(from_id):
             if text.startswith("/warn @"):
                 text_split = text.split(" ", 2)
                 selectedUser = text_split[1]
@@ -183,7 +206,7 @@ def handle(msg):
                     bot.sendMessage(group, "❎ "+str(selectedUser)+" unwarned.\nHe now has "+str(previousWarns-1)+" warns.")
 
             elif text.startswith("/unmute @"):
-                text_split = text.split(" ", 2)
+                text_split = text.split(" ", 1)
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 bot.restrictChatMember(group, selectedUserData, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
@@ -194,10 +217,24 @@ def handle(msg):
                 bot.sendMessage(group, text_split[1], parse_mode="HTML", reply_to_message_id=reply_msgId)
 
             elif text == "/reload":
-                reloadDatabases()
-                bot.sendMessage(group, "✅ <b>Bot reloaded!</b>\nAdmins Found: "+str(groupAdmins.__len__())+".", "HTML")
+                reloadAdmins()
+                bot.sendMessage(group, "✅ <b>Bot reloaded!</b>", "HTML")
 
+            elif text.startswith("/helper @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if not isAdmin(selectedUserData):
+                    updateAdminDatabase(selectedUserData, "helper")
+                    bot.sendMessage(group, str("⛑ " + selectedUser + " is now <b>Helper</b>."), "HTML")
 
+            elif text.startswith("/unhelper @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if selectedUserData in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
+                    db_admins.remove(where('chatId') == selectedUserData)
+                    bot.sendMessage(group, str("⛑ " + selectedUser + " removed from <b>Helpers</b>."), "HTML")
 
 
             elif isReply:
@@ -256,20 +293,46 @@ def handle(msg):
                     bot.restrictChatMember(group, reply_fromId, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
                     bot.sendMessage(group, str("🔈 " + reply_firstName + " unmuted."), reply_to_message_id=reply_msgId)
 
+                elif text.startswith("/helper"):
+                    if not isAdmin(reply_fromId):
+                        updateAdminDatabase(reply_fromId, "helper")
+                        bot.sendMessage(group, str("⛑ " + reply_firstName + " is now <b>Helper</b>."), "HTML")
+
+                elif text.startswith("/unhelper"):
+                    if reply_fromId in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
+                        db_admins.remove(where('chatId') == reply_fromId)
+                        bot.sendMessage(group, str("⛑ " + reply_firstName + " removed from <b>Helpers</b>."), "HTML")
+
+
         # Normal user message
         cmdtext = text.replace(myusername, "")
         if cmdtext == "/staff":
-            message = "⚜️ <b>GROUP STAFF</b> ⚜️"
-            message += "\n👮🏻‍♀ <b>Admins</b>"
-            for i in groupAdmins:
+            message = "🔰️ <b>GROUP STAFF</b> 🔰️"
+
+            message += "\n    ⚜️ <b>Founder</b>"
+            for x in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
                 try:
-                    message += "\n  @" + bot.getChatMember(group, i)['user']['username']
+                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
-                    message += "\n  " + bot.getChatMember(group, i)['user']['first_name']
+                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+
+            message += "\n    👮🏻‍♀ <b>Admins</b>"
+            for x in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
+                try:
+                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                except KeyError:
+                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+
+            message += "\n    ⛑ <b>Helpers</b>"
+            for x in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
+                try:
+                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                except KeyError:
+                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
             bot.sendMessage(group, message, parse_mode="HTML")
 
 
-bot, group, groupAdmins, groupUserCount, myusername = initialize()
+bot, group, groupUserCount, myusername = initialize()
 bot.message_loop({'chat': handle})
 while True:
     time.sleep(60)
