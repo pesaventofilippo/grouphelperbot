@@ -43,19 +43,6 @@ def updateDatabase(id, firstName, lastName, username):
         db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username, 'warns': "0"})
 
 
-def keyboard(type, user, msg_id):
-    msg_id = str(msg_id)
-    user = str(user)
-    data = None
-    if type == "warn":
-        data = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="❎ Unwarn", callback_data="unwarn#"+msg_id+"@"+user)]])
-    elif type == "mute":
-        data = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🔈 Unmute", callback_data="unmute#"+msg_id+"@"+user)]])
-    elif type == "ban":
-        data = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="✅️ Unban", callback_data="unban#"+msg_id+"@"+user)]])
-    return data
-
-
 def getUserInfo(msg):
     chatId = int(msg['chat']['id'])
     msgId = int(msg['message_id'])
@@ -137,9 +124,9 @@ def handle(msg):
                 except IndexError:
                     bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/3]."))
                 if userWarns >= 3:
-                    bot.restrictChatMember(group, selectedUserData, until_date=time.time() + 3600)
+                    bot.kickChatMember(group, selectedUserData)
                     db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
-                    bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted until the next hour."))
+                    bot.sendMessage(group, str("🔇️ " + selectedUser + " has been banned."))
 
             elif text.startswith("/mute @"):
                 text_split = text.split(" ", 2)
@@ -222,9 +209,9 @@ def handle(msg):
                     except IndexError:
                         bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/3]."), reply_to_message_id=reply_msgId)
                     if userWarns >= 3:
-                        bot.restrictChatMember(group, reply_fromId, until_date=time.time() + 3600)
+                        bot.kickChatMember(group, reply_fromId)
                         db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
-                        bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been muted until the next hour."), reply_to_message_id=reply_msgId)
+                        bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been banned."), reply_to_message_id=reply_msgId)
 
                 elif text.startswith("/mute"):
                     bot.restrictChatMember(group, reply_fromId, until_date=time.time() + 3600)
