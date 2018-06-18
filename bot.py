@@ -308,21 +308,21 @@ def handle(msg):
         if cmdtext == "/staff":
             message = "🔰️ <b>GROUP STAFF</b> 🔰️"
 
-            message += "\n    ⚜️ <b>Founder</b>"
+            message += "\n\n    ⚜️ <b>Founder</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n    👮🏻‍♀ <b>Admins</b>"
+            message += "\n\n    👮🏻‍♀ <b>Admins</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n    ⛑ <b>Helpers</b>"
+            message += "\n\n    ⛑ <b>Helpers</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
