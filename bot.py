@@ -26,7 +26,6 @@ def initialize():
         f.write(str(group))
         f.close()
 
-    reloadAdmins()
     groupUserCount = bot.getChatMembersCount(group)
     myusername = "@" + bot.getMe()['username']
     print("Bot started...")
@@ -333,6 +332,7 @@ def handle(msg):
 
 
 bot, group, groupUserCount, myusername = initialize()
+reloadAdmins()
 bot.message_loop({'chat': handle})
 while True:
     time.sleep(60)
