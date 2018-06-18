@@ -1,5 +1,4 @@
 import telepot, time
-from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from tinydb import TinyDB, where
 db_users = TinyDB('users.json')
 
@@ -27,8 +26,9 @@ def initialize():
         f.close()
     groupAdmins = [x['user']['id'] for x in bot.getChatAdministrators(group) if not x['user']['is_bot']]
     groupUserCount = bot.getChatMembersCount(group)
+    myusername = "@" + bot.getMe()['username']
     print("Bot started...")
-    return bot, group, groupAdmins, groupUserCount
+    return bot, group, groupAdmins, groupUserCount, myusername
 
 
 def reloadDatabases():
@@ -102,14 +102,17 @@ def handle(msg):
     if chatId == group:
         updateDatabase(from_id, from_firstName, from_lastName, from_username)
 
+        # Welcoming message
         if bot.getChatMembersCount(group) > groupUserCount:
             bot.sendMessage(group, "Hi, <b>"+from_firstName+"</b>!\nWelcome in the "+bot.getChat(group)['title']+" group!", "HTML")
 
         groupUserCount = bot.getChatMembersCount(group)
 
+        # Delete all commands
         if text.startswith("/"):
             bot.deleteMessage((group, msgId))
 
+        # Admin message
         if from_id in groupAdmins:
             if text.startswith("/warn @"):
                 text_split = text.split(" ", 2)
@@ -253,8 +256,19 @@ def handle(msg):
                     bot.restrictChatMember(group, reply_fromId, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
                     bot.sendMessage(group, str("🔈 " + reply_firstName + " unmuted."), reply_to_message_id=reply_msgId)
 
+        # Normal user message
+        cmdtext = text.replace(myusername, "")
+        if cmdtext == "/staff":
+            message = "👮🏻‍♀️ <b>GROUP STAFF</b> 👮🏻‍♀"
+            message += "\n⚜️ <b>Admins</b>"
+            for i in groupAdmins:
+                try:
+                    message += "\n  @" + bot.getChatMember(group, i)['username']
+                except KeyError:
+                    message += "\n  " + bot.getChatMember(group, i)['first_name']
 
-bot, group, groupAdmins, groupUserCount = initialize()
+
+bot, group, groupAdmins, groupUserCount, myusername = initialize()
 bot.message_loop({'chat': handle})
 while True:
     time.sleep(60)
