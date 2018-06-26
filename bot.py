@@ -108,13 +108,8 @@ def getUserInfo(msg):
     return chatId, msgId, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username
 
 
-def isAdmin(chatId):
-    if chatId in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
-        return True
-    elif chatId in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
-        return True
-    else:
-        return False
+def getStatus(chatId):
+    return db_admins.search(where("chatId") == chatId)[0]['status']
 
 
 def handle(msg):
@@ -134,8 +129,105 @@ def handle(msg):
         if text.startswith("/"):
             bot.deleteMessage((group, msgId))
 
-        # Admin message
-        if isAdmin(from_id):
+
+
+        # Creator message
+        if getStatus(from_id) == "creator":
+            if text.startswith("/helper @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
+                    updateAdminDatabase(selectedUserData, "helper")
+                    bot.sendMessage(group, str("⛑ " + selectedUser + " is now <b>Helper</b>."), "HTML")
+
+            elif text.startswith("/unhelper @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if getStatus(selectedUserData) == "helper":
+                    db_admins.remove(where('chatId') == selectedUserData)
+                    bot.sendMessage(group, str("⛑ " + selectedUser + " removed from <b>Helpers</b>."), "HTML")
+
+            elif text.startswith("/mod @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
+                    updateAdminDatabase(selectedUserData, "moderator")
+                    bot.sendMessage(group, str("👷🏻 " + selectedUser + " is now <b>Moderator</b>."), "HTML")
+
+            elif text.startswith("/unmod @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if getStatus(selectedUserData) == "moderator":
+                    db_admins.remove(where('chatId') == selectedUserData)
+                    bot.sendMessage(group, str("👷🏻 " + selectedUser + " removed from <b>Moderators</b>."), "HTML")
+
+            elif text.startswith("/manager @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
+                    updateAdminDatabase(selectedUserData, "manager")
+                    bot.sendMessage(group, str("🛃 " + selectedUser + " is now <b>Manager</b>."), "HTML")
+
+            elif text.startswith("/unmanager @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                if getStatus(selectedUserData) == "manager":
+                    db_admins.remove(where('chatId') == selectedUserData)
+                    bot.sendMessage(group, str("🛃 " + selectedUser + " removed from <b>Managers</b>."), "HTML")
+
+            elif isReply:
+                if text == "/helper":
+                    if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
+                        updateAdminDatabase(reply_fromId, "helper")
+                        bot.sendMessage(group, str("⛑ " + reply_firstName + " is now <b>Helper</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+                elif text == "/unhelper":
+                    if getStatus(reply_fromId) == "helper":
+                        db_admins.remove(where('chatId') == reply_fromId)
+                        bot.sendMessage(group, str("⛑ " + reply_firstName + " removed from <b>Helpers</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+                elif text == "/mod":
+                    if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
+                        updateAdminDatabase(reply_fromId, "moderator")
+                        bot.sendMessage(group, str("👷🏻 " + reply_firstName + " is now <b>Moderator</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+                elif text == "/unmod":
+                    if getStatus(reply_fromId) == "moderator":
+                        db_admins.remove(where('chatId') == reply_fromId)
+                        bot.sendMessage(group, str("👷🏻 " + reply_firstName + " removed from <b>Moderators</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+                elif text == "/manager":
+                    if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
+                        updateAdminDatabase(reply_fromId, "manager")
+                        bot.sendMessage(group, str("🛃 " + reply_firstName + " is now <b>Manager</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+                elif text == "/unmanager":
+                    if getStatus(reply_fromId) == "manager":
+                        db_admins.remove(where('chatId') == reply_fromId)
+                        bot.sendMessage(group, str("🛃 " + reply_firstName + " removed from <b>Managers</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+
+
+        # Creator or Admin message
+        if (getStatus(from_id) == "creator") or (getStatus(from_id) == "admin"):
+            if text.startswith("/tell "):
+                text_split = text.split(" ", 1)
+                bot.sendMessage(group, text_split[1], parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+            elif text == "/reload":
+                reloadAdmins()
+                bot.sendMessage(group, "✅ <b>Bot reloaded!</b>", "HTML")
+
+
+
+        # Creator or Admin or Moderator message
+        if (getStatus(from_id) == "creator") or (getStatus(from_id) == "admin") or (getStatus(from_id) == "moderator"):
             if text.startswith("/warn @"):
                 text_split = text.split(" ", 2)
                 selectedUser = text_split[1]
@@ -211,33 +303,7 @@ def handle(msg):
                 bot.restrictChatMember(group, selectedUserData, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
                 bot.sendMessage(group, str("🔈 " + selectedUser + " unmuted."))
 
-            elif text.startswith("/tell "):
-                text_split = text.split(" ", 1)
-                bot.sendMessage(group, text_split[1], parse_mode="HTML", reply_to_message_id=reply_msgId)
-
-            elif text == "/reload":
-                reloadAdmins()
-                bot.sendMessage(group, "✅ <b>Bot reloaded!</b>", "HTML")
-
-            elif text.startswith("/helper @"):
-                text_split = text.split(" ", 2)
-                selectedUser = text_split[1]
-                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
-                if not isAdmin(selectedUserData):
-                    updateAdminDatabase(selectedUserData, "helper")
-                    bot.sendMessage(group, str("⛑ " + selectedUser + " is now <b>Helper</b>."), "HTML")
-
-            elif text.startswith("/unhelper @"):
-                text_split = text.split(" ", 2)
-                selectedUser = text_split[1]
-                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
-                if selectedUserData in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
-                    db_admins.remove(where('chatId') == selectedUserData)
-                    bot.sendMessage(group, str("⛑ " + selectedUser + " removed from <b>Helpers</b>."), "HTML")
-
-
             elif isReply:
-
                 if text.startswith("/warn"):
                     previousWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
                     db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == reply_fromId)
@@ -292,15 +358,14 @@ def handle(msg):
                     bot.restrictChatMember(group, reply_fromId, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
                     bot.sendMessage(group, str("🔈 " + reply_firstName + " unmuted."), reply_to_message_id=reply_msgId)
 
-                elif text.startswith("/helper"):
-                    if not isAdmin(reply_fromId):
-                        updateAdminDatabase(reply_fromId, "helper")
-                        bot.sendMessage(group, str("⛑ " + reply_firstName + " is now <b>Helper</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
 
-                elif text.startswith("/unhelper"):
-                    if reply_fromId in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
-                        db_admins.remove(where('chatId') == reply_fromId)
-                        bot.sendMessage(group, str("⛑ " + reply_firstName + " removed from <b>Helpers</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+
+        # Creator or Admin or Moderator or Manager message
+        if (getStatus(from_id) == "creator") or (getStatus(from_id) == "admin") or (getStatus(from_id) == "moderator") or (getStatus(from_id) == "manager"):
+            if isReply:
+                if text == "/del":
+                    bot.deleteMessage((group, reply_msgId))
+
 
 
         # Normal user message
@@ -308,15 +373,29 @@ def handle(msg):
         if cmdtext == "/staff":
             message = "🔰️ <b>GROUP STAFF</b> 🔰️"
 
-            message += "\n\n  ⚜️ <b>Founder</b>"
+            message += "\n\n  👑 <b>Founder</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n\n  👮🏻‍♀ <b>Admins</b>"
+            message += "\n\n  👮🏼 <b>Admins</b>"
             for x in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
+                try:
+                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                except KeyError:
+                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+
+            message += "\n\n  👷🏻 <b>Moderators</b>"
+            for x in [x["chatId"] for x in db_admins.search(where('status') == "moderator")]:
+                try:
+                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                except KeyError:
+                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+
+            message += "\n\n  🛃 <b>Managers</b>"
+            for x in [x["chatId"] for x in db_admins.search(where('status') == "manager")]:
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
@@ -328,6 +407,7 @@ def handle(msg):
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+
             bot.sendMessage(group, message, parse_mode="HTML")
 
 
