@@ -109,7 +109,11 @@ def getUserInfo(msg):
 
 
 def getStatus(chatId):
-    return db_admins.search(where("chatId") == chatId)[0]['status']
+    try:
+        result = db_admins.search(where("chatId") == chatId)[0]['status']
+    except IndexError:
+        result = "user"
+    return result
 
 
 def handle(msg):
