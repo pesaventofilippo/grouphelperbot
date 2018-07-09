@@ -120,6 +120,8 @@ def handle(msg):
             os.remove("file_"+str(msgId))
             if data['response_code'] == 1:
                 bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
+            else:
+                bot.editMessageText((group, message['message_id']), "Could not scan file.")
 
 
         # Delete all commands
