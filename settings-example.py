@@ -14,3 +14,8 @@ class Messages:
 
 class Moderation:
     maxWarns = 3
+
+
+class virusTotal:
+    url = 'https://www.virustotal.com/vtapi/v2/file/report'
+    apikey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'

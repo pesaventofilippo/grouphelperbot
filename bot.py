@@ -1,11 +1,10 @@
-﻿import telepot, time
+﻿import telepot, time, hashlib, requests, os
 from tinydb import TinyDB, where
 import settings
 db_users = TinyDB(settings.Databases.users)
 db_admins = TinyDB(settings.Databases.admins)
 bot = telepot.Bot(settings.Bot.token)
 group = settings.Bot.groupId
-groupUserCount = bot.getChatMembersCount(group)
 myusername = "@" + bot.getMe()['username']
 
 
@@ -37,11 +36,12 @@ def getUserInfo(msg):
     chatId = msg['chat']['id']
     msgId = msg['message_id']
     from_id = msg['from']['id']
+    msgType, x, y = telepot.glance(msg)
 
-    try:
+    if msgType == "text":
         text = msg['text']
-    except KeyError:
-        text = ""
+    else:
+        text == ""
     try:
         from_firstName = msg['from']['first_name']
     except KeyError:
@@ -80,7 +80,7 @@ def getUserInfo(msg):
         reply_lastName = None
         reply_username = None
 
-    return chatId, msgId, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username
+    return chatId, msgId, msgType, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username
 
 
 def getStatus(chatId):
@@ -92,17 +92,16 @@ def getStatus(chatId):
 
 
 def handle(msg):
-    chatId, msgId, text,\
+    chatId, msgId, msgType, text,\
     from_id, from_firstName, from_lastName, from_username,\
     isReply, reply_msgId,\
     reply_fromId, reply_firstName, reply_lastName, reply_username = getUserInfo(msg)
-    global groupUserCount
 
     if chatId == group:
         updateUserDatabase(from_id, from_firstName, from_lastName, from_username)
 
         # Welcoming message
-        if bot.getChatMembersCount(group) > groupUserCount:
+        if msgType == "new_chat_member":
             data = settings.Messages.welcome
             data = data.replace('{{name}}', from_firstName)
             data = data.replace('{{surname}}', from_lastName)
@@ -111,12 +110,21 @@ def handle(msg):
             data = data.replace('{{group_name}}', bot.getChat(group)['title'])
             bot.sendMessage(group, data, "HTML")
 
-        groupUserCount = bot.getChatMembersCount(group)
+        elif msgType == "document":
+            message = bot.sendMessage(group, "<i>Scanning File...</i>", "HTML")
+            bot.download_file(msgId, "file_"+str(msgId))
+            file = open("file_"+str(msgId), "rb")
+            hash = hashlib.sha256(file.read()).hexdigest()
+            data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
+            file.close()
+            os.remove("file_"+str(msgId))
+            if data['response_code'] == 1:
+                bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
+
 
         # Delete all commands
         if text.startswith("/"):
             bot.deleteMessage((group, msgId))
-
 
 
         # Creator message

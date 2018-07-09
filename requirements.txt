@@ -5,6 +5,7 @@ chardet==3.0.4
 idna==2.7
 idna-ssl==1.0.1
 multidict==4.3.1
+requests==2.19.1
 telepot==12.7
 tinydb==3.9.0.post1
 urllib3==1.23
