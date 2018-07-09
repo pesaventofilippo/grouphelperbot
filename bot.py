@@ -41,7 +41,7 @@ def getUserInfo(msg):
     if msgType == "text":
         text = msg['text']
     else:
-        text == ""
+        text = ""
     try:
         from_firstName = msg['from']['first_name']
     except KeyError:
