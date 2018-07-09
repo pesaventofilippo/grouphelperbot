@@ -2,4 +2,5 @@ bot_token.txt
 group_id.txt
 admins.json
 users.json
+settings.py
 __pycache__/
