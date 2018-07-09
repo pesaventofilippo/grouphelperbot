@@ -117,7 +117,10 @@ def getStatus(chatId):
 
 
 def handle(msg):
-    chatId, msgId, text, from_id, from_firstName, from_lastName, from_username, isReply, reply_msgId, reply_fromId, reply_firstName, reply_lastName, reply_username = getUserInfo(msg)
+    chatId, msgId, text,\
+    from_id, from_firstName, from_lastName, from_username,\
+    isReply, reply_msgId,\
+    reply_fromId, reply_firstName, reply_lastName, reply_username = getUserInfo(msg)
     global groupUserCount
 
     if chatId == group:
@@ -136,7 +139,7 @@ def handle(msg):
 
 
         # Creator message
-        if getStatus(from_id) == "creator":
+        if getStatus(from_id) in ["creator"]:
             if text.startswith("/helper @"):
                 text_split = text.split(" ", 2)
                 selectedUser = text_split[1]
@@ -219,7 +222,7 @@ def handle(msg):
 
 
         # Creator or Admin message
-        if (getStatus(from_id) == "creator") or (getStatus(from_id) == "admin"):
+        if getStatus(from_id) in ["creator", "admin"]:
             if text.startswith("/tell "):
                 text_split = text.split(" ", 1)
                 bot.sendMessage(group, text_split[1], parse_mode="HTML", reply_to_message_id=reply_msgId)
@@ -231,8 +234,26 @@ def handle(msg):
 
 
         # Creator or Admin or Moderator message
-        if (getStatus(from_id) == "creator") or (getStatus(from_id) == "admin") or (getStatus(from_id) == "moderator"):
+        if getStatus(from_id) in ["creator", "admin", "moderator"]:
             if text.startswith("/warn @"):
+                text_split = text.split(" ", 2)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                previousWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
+                db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == selectedUserData)
+                userWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
+                try:
+                    reason = text_split[2]
+                    bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/3] for <b>" + reason + "</b>."), parse_mode="HTML")
+                except IndexError:
+                    bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/3]."))
+                if userWarns >= 3:
+                    bot.kickChatMember(group, selectedUserData)
+                    db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
+                    bot.sendMessage(group, str("🔇️ " + selectedUser + " has been banned."))
+
+            elif text.startswith("/delwarn @"):
+                bot.deleteMessage((group, reply_msgId))
                 text_split = text.split(" ", 2)
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
@@ -322,6 +343,21 @@ def handle(msg):
                         db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
                         bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been banned."), reply_to_message_id=reply_msgId)
 
+                if text.startswith("/delwarn"):
+                    bot.deleteMessage((group, reply_msgId))
+                    previousWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
+                    db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == reply_fromId)
+                    userWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
+                    try:
+                        reason = text.split(" ", 1)[1]
+                        bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/3] for <b>" + reason + "</b>."), parse_mode="HTML")
+                    except IndexError:
+                        bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/3]."))
+                    if userWarns >= 3:
+                        bot.kickChatMember(group, reply_fromId)
+                        db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
+                        bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been banned."))
+
                 elif text.startswith("/mute"):
                     bot.restrictChatMember(group, reply_fromId, until_date=time.time() + 3600)
                     try:
@@ -365,7 +401,7 @@ def handle(msg):
 
 
         # Creator or Admin or Moderator or Manager message
-        if (getStatus(from_id) == "creator") or (getStatus(from_id) == "admin") or (getStatus(from_id) == "moderator") or (getStatus(from_id) == "manager"):
+        if getStatus(from_id) in ["creator", "admin", "moderator", "manager"]:
             if isReply:
                 if text == "/del":
                     bot.deleteMessage((group, reply_msgId))
