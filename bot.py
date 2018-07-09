@@ -119,9 +119,9 @@ def handle(msg):
             file.close()
             os.remove("file_"+str(msgId))
             if data['response_code'] == 1:
-                bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']), reply_to_message_id=msgId)
+                bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
             else:
-                bot.editMessageText((group, message['message_id']), "Could not scan file.", reply_to_message_id=msgId)
+                bot.editMessageText((group, message['message_id']), "Could not scan file.")
 
 
         # Delete all commands
