@@ -1,11 +1,13 @@
 ﻿import telepot, time
 from tinydb import TinyDB, where
+import settings
 db_users = TinyDB('users.json')
 db_admins = TinyDB('admins.json')
 
 
 def initialize():
     try:
+        print(settings.Settings.test)
         f = open("bot_token.txt", "r")
         token = str(f.readline())
         bot = telepot.Bot(token)
