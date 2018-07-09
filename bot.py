@@ -111,17 +111,17 @@ def handle(msg):
             bot.sendMessage(group, data, "HTML")
 
         elif msgType == "document":
-            message = bot.sendMessage(group, "<i>Scanning File...</i>", "HTML")
-            bot.download_file(msgId, "file_"+str(msgId))
+            message = bot.sendMessage(group, "<i>Scanning File...</i>", parse_mode="HTML", reply_to_message_id=msgId)
+            bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
             file = open("file_"+str(msgId), "rb")
             hash = hashlib.sha256(file.read()).hexdigest()
             data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
             file.close()
             os.remove("file_"+str(msgId))
             if data['response_code'] == 1:
-                bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']), reply_to_message_id=msgId)
             else:
-                bot.editMessageText((group, message['message_id']), "Could not scan file.")
+                bot.editMessageText((group, message['message_id']), "Could not scan file.", reply_to_message_id=msgId)
 
 
         # Delete all commands
