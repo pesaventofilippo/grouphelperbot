@@ -324,6 +324,7 @@ def handle(msg):
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 bot.kickChatMember(group, selectedUserData)
+                db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
                 try:
                     reason = text_split[2]
                     bot.sendMessage(group, str("🚷 "+selectedUser+" has been banned for <b>"+reason+"</b>."), parse_mode="HTML")
@@ -418,6 +419,7 @@ def handle(msg):
 
                 elif text.startswith("/ban"):
                     bot.kickChatMember(group, reply_fromId)
+                    db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
                     try:
                         reason = text.split(" ", 1)[1]
                         bot.sendMessage(group, str("🚷 "+reply_firstName+" has been banned for <b>"+reason+"</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
