@@ -1,6 +1,8 @@
 class Bot:
     token = '123456789:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
     groupId = -1001234567890
+    useStaffGroup = True
+    staffGroupId = -1001234567890
 
 
 class Databases:
