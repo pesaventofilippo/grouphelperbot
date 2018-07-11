@@ -121,17 +121,18 @@ def handle(msg):
             logStaff('''➕ <b>New User</b>\n-> <a href="tg://user?id='''+str(from_id)+'''">'''+from_firstName+"</a>")
 
         elif msgType == "document":
-            message = bot.sendMessage(group, "<i>Scanning File...</i>", parse_mode="HTML", reply_to_message_id=msgId)
-            bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
-            file = open("file_"+str(msgId), "rb")
-            hash = hashlib.sha256(file.read()).hexdigest()
-            data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
-            file.close()
-            os.remove("file_"+str(msgId))
-            if data['response_code'] == 1:
-                bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
-            else:
-                bot.editMessageText((group, message['message_id']), "Could not scan file.")
+            if settings.Bot.scanSendedFiles:
+                message = bot.sendMessage(group, "<i>Scanning File...</i>", parse_mode="HTML", reply_to_message_id=msgId)
+                bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
+                file = open("file_"+str(msgId), "rb")
+                hash = hashlib.sha256(file.read()).hexdigest()
+                data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
+                file.close()
+                os.remove("file_"+str(msgId))
+                if data['response_code'] == 1:
+                    bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                else:
+                    bot.editMessageText((group, message['message_id']), "Could not scan file.")
 
 
         # Delete all commands
