@@ -467,7 +467,15 @@ def handle(msg):
 
         # Normal user message
         cmdtext = text.replace(myusername, "")
-        if cmdtext == "/staff":
+        if text.startswith("@admin"):
+            bot.sendMessage(group, "<i>Call received.</i>", "HTML")
+            if isReply:
+                logStaff('''🆘 Staff Call\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + '''</a>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nMessage: "+text)
+                bot.forwardMessage(settings.Bot.staffGroupId, group, reply_msgId)
+            else:
+                logStaff('''🆘 Staff Call\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + "</a>\nMessage: " + text)
+
+        elif cmdtext == "/staff":
             message = "🔰️ <b>GROUP STAFF</b> 🔰️"
 
             message += "\n\n  👑 <b>Founder</b>"
