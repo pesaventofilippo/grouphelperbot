@@ -465,15 +465,16 @@ def handle(msg):
 
 
 
-        # Normal user message
+        # Any user message
         cmdtext = text.replace(myusername, "")
         if text.startswith("@admin"):
-            bot.sendMessage(group, "<i>Call received.</i>", "HTML")
-            if isReply:
-                logStaff('''🆘 Staff Call\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + '''</a>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nMessage: "+text)
-                bot.forwardMessage(settings.Bot.staffGroupId, group, reply_msgId)
-            else:
-                logStaff('''🆘 Staff Call\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + "</a>\nMessage: " + text)
+            if settings.Bot.useStaffGroup:
+                bot.sendMessage(group, "<i>Call received.</i>", "HTML")
+                if isReply:
+                    logStaff('''🆘 <b>Staff Call</b>\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + '''</a>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nMessage: "+text)
+                    bot.forwardMessage(settings.Bot.staffGroupId, group, reply_msgId)
+                else:
+                    logStaff('''🆘 <b>Staff Call</b>\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + "</a>\nMessage: " + text)
 
         elif cmdtext == "/staff":
             message = "🔰️ <b>GROUP STAFF</b> 🔰️"
@@ -514,6 +515,21 @@ def handle(msg):
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
             bot.sendMessage(group, message, parse_mode="HTML")
+
+        elif getStatus(from_id) == "user":
+            if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text):
+                bot.deleteMessage((group, msgId))
+                previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
+                userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>spam</b>."), parse_mode="HTML")
+                logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Spam\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                if userWarns >= settings.Moderation.maxWarns:
+                    bot.kickChatMember(group, from_id)
+                    db_users.update({'warns': "0"}, where('chatId') == from_id)
+                    bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
+                    logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+
 
 
 print("Bot started...")
