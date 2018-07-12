@@ -365,6 +365,12 @@ def handle(msg):
                 bot.sendMessage(group, str("🔈 " + selectedUser + " unmuted."))
                 logStaff("🔈 <b>Unmute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
 
+            elif text.startswith("/info @"):
+                text_split = text.split(" ", 1)
+                selectedUser = text_split[1]
+                selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
+                bot.sendMessage(group, "🙍‍♂️ <b>User Info</b>\nUser: "+selectedUser+"\nChatID: <code>"+str(selectedUserData)+"</code>\nWarns: "+str(db_users.search(where('chatId') == selectedUserData)[0]['warns']), "HTML")
+
             elif isReply:
                 if text.startswith("/warn"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
@@ -455,6 +461,9 @@ def handle(msg):
                     bot.restrictChatMember(group, reply_fromId, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
                     bot.sendMessage(group, str("🔈 " + reply_firstName + " unmuted."), reply_to_message_id=reply_msgId)
                     logStaff('''🔈'️ <b>Unmute</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
+
+                elif text.startswith("/info"):
+                    bot.sendMessage(group, "🙍‍♂️ <b>User Info</b>\nUser: "+reply_firstName+"\nChatID: <code>"+str(reply_fromId)+"</code>\nWarns: "+str(db_users.search(where('chatId') == reply_fromId)[0]['warns']), "HTML")
 
 
 
