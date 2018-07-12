@@ -22,7 +22,7 @@ class Moderation:
     scanSendedFiles = True
     forwardSpamDetect = True
     maxWarns = 3
-    channelsWhitelist = [durov, telegram]
+    channelsWhitelist = ["durov", "telegram"]
 
 
 class virusTotal:
