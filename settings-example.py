@@ -21,6 +21,8 @@ class Moderation:
     spamDetect = True
     scanSendedFiles = True
     forwardSpamDetect = True
+    detectPorn = True
+    detectViolence = True
     maxWarns = 3
     channelsWhitelist = ["durov", "telegram"]
 
@@ -28,3 +30,8 @@ class Moderation:
 class virusTotal:
     url = 'https://www.virustotal.com/vtapi/v2/file/report'
     apikey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+
+class sightEngine:
+    user = '1234567890'
+    key = 'xxxxxxxxxxxxxxxxxxxx'

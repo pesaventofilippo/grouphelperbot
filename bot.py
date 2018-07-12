@@ -1,11 +1,14 @@
 ﻿import telepot, time, hashlib, requests, os
 from tinydb import TinyDB, where
+from sightengine.client import SightengineClient
 import settings
+
 db_users = TinyDB(settings.Databases.users)
 db_admins = TinyDB(settings.Databases.admins)
 bot = telepot.Bot(settings.Bot.token)
 group = settings.Bot.groupId
 myusername = "@" + bot.getMe()['username']
+imgparse_ai = SightengineClient(settings.sightEngine.user, settings.sightEngine.key)
 
 
 def updateAdminDatabase(id, status):
@@ -594,6 +597,46 @@ def handle(msg):
                                 logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
                 except IndexError:
                     pass
+
+            # Porn and violence auto-detect engine
+            if msgType == "photo":
+                found = False
+                bot.download_file(msg['document']['file_id'], "file_" + str(msgId))
+
+                if settings.Moderation.detectPorn and not found:
+                    output = imgparse_ai.check("nudity").set_file("file_" + str(msgId))
+                    if output["nudity"]["safe"] <= output["nudity"]["partial"] and output["nudity"]["safe"] <= output["nudity"]["raw"]:
+                        found = True
+                        os.remove("file_" + str(msgId))
+                        bot.deleteMessage((group, msgId))
+                        previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                        db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
+                        userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                        bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>porn media</b>."),parse_mode="HTML")
+                        logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Porn Media\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                        if userWarns >= settings.Moderation.maxWarns:
+                            bot.kickChatMember(group, from_id)
+                            db_users.update({'warns': "0"}, where('chatId') == from_id)
+                            bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
+                            logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+
+                if settings.Moderation.detectViolence and not found:
+                    output = filt_api.check("offensive", "wad").set_file("file_" + str(msgId))
+                    if output["offensive"]["prob"] > 0.85:
+                        found = True
+                        os.remove("file_" + str(msgId))
+                        bot.deleteMessage((group, msgId))
+                        previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                        db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
+                        userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                        bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>offensive media</b>."), parse_mode="HTML")
+                        logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Offensive Media\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                        if userWarns >= settings.Moderation.maxWarns:
+                            bot.kickChatMember(group, from_id)
+                            db_users.update({'warns': "0"}, where('chatId') == from_id)
+                            bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
+                            logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+
 
 
 print("Bot started...")
