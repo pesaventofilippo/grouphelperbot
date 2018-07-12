@@ -17,9 +17,9 @@ def updateAdminDatabase(id, status):
 
 def updateUserDatabase(id, firstName, lastName, username):
     if db_users.search(where('chatId') == id):
-        db_users.update({'firstName': firstName, 'lastName': lastName, 'username': username}, where('chatId') == id)
+        db_users.update({'firstName': firstName, 'lastName': lastName, 'username': username, 'lastMsgDate': int(time.time())}, where('chatId') == id)
     else:
-        db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username, 'warns': "0"})
+        db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username, 'warns': "0", 'lastMsgDate': int(time.time())})
 
 
 def reloadAdmins():
@@ -246,6 +246,22 @@ def handle(msg):
                 reloadAdmins()
                 bot.sendMessage(group, "✅ <b>Bot reloaded!</b>", "HTML")
                 logStaff("✅ <b>Bot reloaded!</b>\nBy: "+from_firstName+" "+from_lastName)
+
+            elif text.startswith("/kickinactive "):
+                text_split = text.split(" ")
+                days = int(text_split[1])
+                currentTime = int(time.time())
+                diffTime = days*24*60*60
+                lastTime = currentTime - diffTime
+                kick_users = db_users.search(where('lastMsgDate')<lastTime)
+                logStaff("<b>Inactive Users Kick started!</b>")
+                for x in kick_users:
+                    try:
+                        bot.kickChatMember(group, x['chatId'], until_date=int(time.time())+60)
+                    except Exception:
+                        pass
+                logStaff("<b>Inactive Users Kick terminated!</b>")
+
 
 
 
