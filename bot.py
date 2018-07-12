@@ -111,18 +111,19 @@ def handle(msg):
 
         # Welcoming message
         if msgType == "new_chat_member":
-            data = settings.Messages.welcome
-            if data != "":
-                data = data.replace('{{name}}', from_firstName)
-                data = data.replace('{{surname}}', from_lastName)
-                data = data.replace('{{username}}', from_username)
-                data = data.replace('{{id}}', from_id)
-                data = data.replace('{{group_name}}', bot.getChat(group)['title'])
-                bot.sendMessage(group, data, "HTML")
+            if settings.Moderation.showWelcomeMessage:
+                data = settings.Messages.welcome
+                if data != "":
+                    data = data.replace('{{name}}', from_firstName)
+                    data = data.replace('{{surname}}', from_lastName)
+                    data = data.replace('{{username}}', from_username)
+                    data = data.replace('{{id}}', from_id)
+                    data = data.replace('{{group_name}}', bot.getChat(group)['title'])
+                    bot.sendMessage(group, data, "HTML")
             logStaff('''➕ <b>New User</b>\n-> <a href="tg://user?id='''+str(from_id)+'''">'''+from_firstName+"</a>")
 
         elif msgType == "document":
-            if settings.Bot.scanSendedFiles:
+            if settings.Moderation.scanSendedFiles:
                 message = bot.sendMessage(group, "<i>Scanning File...</i>", parse_mode="HTML", reply_to_message_id=msgId)
                 bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
                 file = open("file_"+str(msgId), "rb")
@@ -550,6 +551,11 @@ def handle(msg):
 
             bot.sendMessage(group, message, parse_mode="HTML")
 
+        elif cmdtext == "/rules":
+            data = settings.Messages.rules
+            if data != "":
+                bot.sendMessage(group, data, "HTML")
+
         elif getStatus(from_id) == "user":
             if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text):
                 if settings.Moderation.spamDetect:
@@ -564,7 +570,6 @@ def handle(msg):
                         db_users.update({'warns': "0"}, where('chatId') == from_id)
                         bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
                         logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
-
 
 
 print("Bot started...")

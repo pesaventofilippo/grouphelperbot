@@ -3,7 +3,6 @@ class Bot:
     groupId = -1001234567890
     useStaffGroup = True
     staffGroupId = -1001234567890
-    scanSendedFiles = True
 
 
 class Databases:
@@ -13,14 +12,17 @@ class Databases:
 
 class Messages:
     welcome = "Hi, <b>{{name}}</b>!\nWelcome in the {{group_name}} group!"
+    rules = ""
 
 
 class Moderation:
+    showWelcomeMessage = True
     deleteCommands = True
-    maxWarns = 3
     spamDetect = True
+    scanSendedFiles = True
+    maxWarns = 3
 
 
 class virusTotal:
     url = 'https://www.virustotal.com/vtapi/v2/file/report'
-    apikey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    apikey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
