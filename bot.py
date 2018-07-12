@@ -120,7 +120,6 @@ def handle(msg):
                     data = data.replace('{{name}}', from_firstName)
                     data = data.replace('{{surname}}', from_lastName)
                     data = data.replace('{{username}}', from_username)
-                    data = data.replace('{{id}}', from_id)
                     data = data.replace('{{group_name}}', bot.getChat(group)['title'])
                     bot.sendMessage(group, data, "HTML")
             logStaff('''➕ <b>New User</b>\n-> <a href="tg://user?id='''+str(from_id)+'''">'''+from_firstName+"</a>")
@@ -595,17 +594,17 @@ def handle(msg):
                                 db_users.update({'warns': "0"}, where('chatId') == from_id)
                                 bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
                                 logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
-                except IndexError:
+                except KeyError:
                     pass
 
             # Porn and violence auto-detect engine
             if msgType == "photo":
                 found = False
-                bot.download_file(msg['document']['file_id'], "file_" + str(msgId))
+                bot.download_file(msg['photo'][0]['file_id'], "file_" + str(msgId))
 
                 if settings.Moderation.detectPorn and not found:
                     output = imgparse_ai.check("nudity").set_file("file_" + str(msgId))
-                    if output["nudity"]["safe"] <= output["nudity"]["partial"] and output["nudity"]["safe"] <= output["nudity"]["raw"]:
+                    if output["nudity"]["partial"] > 0.4 or output["nudity"]["raw"] > 0.2:
                         found = True
                         os.remove("file_" + str(msgId))
                         bot.deleteMessage((group, msgId))
@@ -621,8 +620,8 @@ def handle(msg):
                             logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
 
                 if settings.Moderation.detectViolence and not found:
-                    output = filt_api.check("offensive", "wad").set_file("file_" + str(msgId))
-                    if output["offensive"]["prob"] > 0.85:
+                    output = imgparse_ai.check("offensive").set_file("file_" + str(msgId))
+                    if output["offensive"]["prob"] > 0.3:
                         found = True
                         os.remove("file_" + str(msgId))
                         bot.deleteMessage((group, msgId))
