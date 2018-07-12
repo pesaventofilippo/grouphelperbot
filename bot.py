@@ -25,10 +25,11 @@ def updateUserDatabase(id, firstName, lastName, username):
 def reloadAdmins():
     db_admins.remove(where('status') == "admin")
     for x in bot.getChatAdministrators(group):
-        if x['status'] == "administrator":
-            updateAdminDatabase(x['user']['id'], "admin")
-        elif x['status'] == "creator":
-            updateAdminDatabase(x['user']['id'], "creator")
+        if not x['user']['is_bot']:
+            if x['status'] == "administrator":
+                updateAdminDatabase(x['user']['id'], "admin")
+            elif x['status'] == "creator":
+                updateAdminDatabase(x['user']['id'], "creator")
 
 
 def getUserInfo(msg):
