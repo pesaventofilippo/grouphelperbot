@@ -255,13 +255,13 @@ def handle(msg):
                 diffTime = days*24*60*60
                 lastTime = currentTime - diffTime
                 kick_users = db_users.search(where('lastMsgDate')<lastTime)
-                logStaff("<b>Inactive Users Kick started!</b>")
+                logStaff("☢️ <b>Inactive Users Kick</b>\nStarted by: "+from_firstName+" "+from_lastName+"\nMax. Inactive days: "+days)
                 for x in kick_users:
                     try:
                         bot.kickChatMember(group, x['chatId'], until_date=int(time.time())+60)
                     except Exception:
                         pass
-                logStaff("<b>Inactive Users Kick terminated!</b>")
+                logStaff("☢ <b>Inactive Users Kick terminated!</b>")
 
 
 
