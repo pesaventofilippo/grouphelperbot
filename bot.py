@@ -122,20 +122,6 @@ def handle(msg):
                     bot.sendMessage(group, data, "HTML")
             logStaff('''➕ <b>New User</b>\n-> <a href="tg://user?id='''+str(from_id)+'''">'''+from_firstName+"</a>")
 
-        elif msgType == "document":
-            if settings.Moderation.scanSendedFiles:
-                message = bot.sendMessage(group, "<i>Scanning File...</i>", parse_mode="HTML", reply_to_message_id=msgId)
-                bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
-                file = open("file_"+str(msgId), "rb")
-                hash = hashlib.sha256(file.read()).hexdigest()
-                data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
-                file.close()
-                os.remove("file_"+str(msgId))
-                if data['response_code'] == 1:
-                    bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
-                else:
-                    bot.editMessageText((group, message['message_id']), "Could not scan file.")
-
 
         # Delete all commands
         if text.startswith("/"):
@@ -556,7 +542,10 @@ def handle(msg):
             if data != "":
                 bot.sendMessage(group, data, "HTML")
 
+        # Only Normal User Messages
         elif getStatus(from_id) == "user":
+
+            # Detect spam from a Telegram Link
             if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text):
                 if settings.Moderation.spamDetect:
                     bot.deleteMessage((group, msgId))
@@ -570,6 +559,41 @@ def handle(msg):
                         db_users.update({'warns': "0"}, where('chatId') == from_id)
                         bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
                         logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+
+            # Scan Sended Files
+            if msgType == "document":
+                if settings.Moderation.scanSendedFiles:
+                    message = bot.sendMessage(group, "<i>Scanning File...</i>", parse_mode="HTML", reply_to_message_id=msgId)
+                    bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
+                    file = open("file_"+str(msgId), "rb")
+                    hash = hashlib.sha256(file.read()).hexdigest()
+                    data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
+                    file.close()
+                    os.remove("file_"+str(msgId))
+                    if data['response_code'] == 1:
+                        bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                    else:
+                        bot.editMessageText((group, message['message_id']), "Could not scan file.")
+
+            # Detect spam from a fowarded message
+            if settings.Moderation.forwardSpamDetect:
+                try:
+                    forwarded_from = msg['forward_from_chat']
+                    if forwarded_from['type'] == "channel":
+                        if forwarded_from['username'] not in settings.Moderation.channelsWhitelist:
+                            bot.deleteMessage((group, msgId))
+                            previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                            db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
+                            userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                            bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>forward from a non whitelisted channel</b>."), parse_mode="HTML")
+                            logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Forward from a non whitelisted channel\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                            if userWarns >= settings.Moderation.maxWarns:
+                                bot.kickChatMember(group, from_id)
+                                db_users.update({'warns': "0"}, where('chatId') == from_id)
+                                bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
+                                logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+                except IndexError:
+                    pass
 
 
 print("Bot started...")
