@@ -16,7 +16,9 @@ class Messages:
 
 
 class Moderation:
+    deleteCommands = True
     maxWarns = 3
+    spamDetect = True
 
 
 class virusTotal:

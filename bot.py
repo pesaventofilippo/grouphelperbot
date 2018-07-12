@@ -111,12 +111,13 @@ def handle(msg):
         # Welcoming message
         if msgType == "new_chat_member":
             data = settings.Messages.welcome
-            data = data.replace('{{name}}', from_firstName)
-            data = data.replace('{{surname}}', from_lastName)
-            data = data.replace('{{username}}', from_username)
-            data = data.replace('{{id}}', from_id)
-            data = data.replace('{{group_name}}', bot.getChat(group)['title'])
-            bot.sendMessage(group, data, "HTML")
+            if data != "":
+                data = data.replace('{{name}}', from_firstName)
+                data = data.replace('{{surname}}', from_lastName)
+                data = data.replace('{{username}}', from_username)
+                data = data.replace('{{id}}', from_id)
+                data = data.replace('{{group_name}}', bot.getChat(group)['title'])
+                bot.sendMessage(group, data, "HTML")
             logStaff('''➕ <b>New User</b>\n-> <a href="tg://user?id='''+str(from_id)+'''">'''+from_firstName+"</a>")
 
         elif msgType == "document":
@@ -136,7 +137,8 @@ def handle(msg):
 
         # Delete all commands
         if text.startswith("/"):
-            bot.deleteMessage((group, msgId))
+            if settings.Moderation.deleteCommands:
+                bot.deleteMessage((group, msgId))
 
 
         # Creator message
@@ -518,17 +520,18 @@ def handle(msg):
 
         elif getStatus(from_id) == "user":
             if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text):
-                bot.deleteMessage((group, msgId))
-                previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
-                db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
-                userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
-                bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>spam</b>."), parse_mode="HTML")
-                logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Spam\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
-                if userWarns >= settings.Moderation.maxWarns:
-                    bot.kickChatMember(group, from_id)
-                    db_users.update({'warns': "0"}, where('chatId') == from_id)
-                    bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
-                    logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+                if settings.Moderation.spamDetect:
+                    bot.deleteMessage((group, msgId))
+                    previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                    db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
+                    userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
+                    bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>spam</b>."), parse_mode="HTML")
+                    logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Spam\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                    if userWarns >= settings.Moderation.maxWarns:
+                        bot.kickChatMember(group, from_id)
+                        db_users.update({'warns': "0"}, where('chatId') == from_id)
+                        bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
+                        logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
 
 
 
