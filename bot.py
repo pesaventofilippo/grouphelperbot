@@ -247,10 +247,12 @@ def handle(msg):
                 logStaff("☢️ <b>Inactive Users Kick</b>\nStarted by: "+from_firstName+" "+from_lastName+"\nMax. Inactive days: "+days)
                 for x in kick_users:
                     try:
-                        bot.kickChatMember(group, x['chatId'], until_date=int(time.time())+60)
+                        bot.kickChatMember(group, x['chatId'])
+                        time.sleep(0.5)
+                        bot.unbanChatMember(group, x['chatId'])
                     except Exception:
                         pass
-                logStaff("☢ <b>Inactive Users Kick terminated!</b>")
+                logStaff("☢️ <b>Inactive Users Kick terminated!</b>")
 
 
 
@@ -268,15 +270,15 @@ def handle(msg):
                     try:
                         reason = text_split[2]
                         bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns)+"] for <b>" + reason + "</b>."), parse_mode="HTML")
-                        logStaff("❗ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
+                        logStaff("❗️ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
                     except IndexError:
                         bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns)+"]."))
-                        logStaff("❗ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                        logStaff("❗️ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, selectedUserData)
                         db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
-                        bot.sendMessage(group, str("🔇️ " + selectedUser + " has been banned."))
-                        logStaff("🔇️ <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
+                        bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned."))
+                        logStaff("🚷 <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
 
             elif text.startswith("/delwarn @"):
                 bot.deleteMessage((group, reply_msgId))
@@ -289,16 +291,16 @@ def handle(msg):
                     userWarns = int(db_users.search(where('chatId') == selectedUserData)[0]['warns'])
                     try:
                         reason = text_split[2]
-                        bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns)+"] for <b>" + reason + "</b>."), parse_mode="HTML")
-                        logStaff("❗ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                        bot.sendMessage(group, str("❗️ " + selectedUser + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns)+"] for <b>" + reason + "</b>."), parse_mode="HTML")
+                        logStaff("❗️ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                     except IndexError:
-                        bot.sendMessage(group, str("❗️️ " + selectedUser + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns)+"]."))
-                        logStaff("❗ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                        bot.sendMessage(group, str("❗️ " + selectedUser + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns)+"]."))
+                        logStaff("❗️ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, selectedUserData)
                         db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
-                        bot.sendMessage(group, str("🔇️ " + selectedUser + " has been banned."))
-                        logStaff("🔇️ <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
+                        bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned."))
+                        logStaff("🚷 <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
 
             elif text.startswith("/mute @"):
                 text_split = text.split(" ", 2)
@@ -308,11 +310,11 @@ def handle(msg):
                     bot.restrictChatMember(group, selectedUserData, until_date=time.time() + 3600)
                     try:
                         reason = text_split[2]
-                        bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML")
-                        logStaff("🔇️ <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason)
+                        bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML")
+                        logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason)
                     except IndexError:
-                        bot.sendMessage(group, str("🔇️ " + selectedUser + " has been muted until the next hour."))
-                        logStaff("🔇️ <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
+                        bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted until the next hour."))
+                        logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
 
             elif text.startswith("/kick @"):
                 text_split = text.split(" ", 2)
@@ -327,11 +329,11 @@ def handle(msg):
                         pass
                     try:
                         reason = text_split[2]
-                        bot.sendMessage(group, str("❗️️ "+selectedUser+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML")
-                        logStaff("❗️️ <b>Kick</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason)
+                        bot.sendMessage(group, str("❕ "+selectedUser+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML")
+                        logStaff("❕ <b>Kick</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason)
                     except IndexError:
-                        bot.sendMessage(group, str("❗️️ "+selectedUser+" has been kicked."))
-                        logStaff("❗️️ <b>Kick</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
+                        bot.sendMessage(group, str("❕ "+selectedUser+" has been kicked."))
+                        logStaff("❕ <b>Kick</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
 
             elif text.startswith("/ban @"):
                 text_split = text.split(" ", 2)
@@ -353,8 +355,8 @@ def handle(msg):
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 bot.unbanChatMember(group, selectedUserData)
-                bot.sendMessage(group, "✅️ "+str(selectedUser)+" unbanned.")
-                logStaff("✅️ <b>Unban</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
+                bot.sendMessage(group, "✅ "+str(selectedUser)+" unbanned.")
+                logStaff("✅ <b>Unban</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
 
             elif text.startswith("/unwarn @"):
                 text_split = text.split(" ", 1)
@@ -371,8 +373,8 @@ def handle(msg):
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 bot.restrictChatMember(group, selectedUserData, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
-                bot.sendMessage(group, str("🔈 " + selectedUser + " unmuted."))
-                logStaff("🔈 <b>Unmute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
+                bot.sendMessage(group, str("🔊 " + selectedUser + " unmuted."))
+                logStaff("🔊 <b>Unmute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
 
             elif text.startswith("/info @"):
                 text_split = text.split(" ", 1)
@@ -388,16 +390,16 @@ def handle(msg):
                         userWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
                         try:
                             reason = text.split(" ", 1)[1]
-                            bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>" + reason + "</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
-                            logStaff('''❗ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
+                            bot.sendMessage(group, str("❗️ " + reply_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>" + reason + "</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                            logStaff('''❗️ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
                         except IndexError:
                             bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "]."), reply_to_message_id=reply_msgId)
-                            logStaff('''❗ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
+                            logStaff('''❗️ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, reply_fromId)
                             db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
-                            bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been banned."), reply_to_message_id=reply_msgId)
-                            logStaff('''🔇️ <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
+                            bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned."), reply_to_message_id=reply_msgId)
+                            logStaff('''🚷 <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
 
                 elif text.startswith("/delwarn"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
@@ -407,27 +409,27 @@ def handle(msg):
                         userWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
                         try:
                             reason = text.split(" ", 1)[1]
-                            bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>" + reason + "</b>."), parse_mode="HTML")
-                            logStaff('''❗ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
+                            bot.sendMessage(group, str("❗️ " + reply_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>" + reason + "</b>."), parse_mode="HTML")
+                            logStaff('''❗️ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
                         except IndexError:
-                            bot.sendMessage(group, str("❗️️ " + reply_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "]."))
-                            logStaff('''❗ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
+                            bot.sendMessage(group, str("❗️ " + reply_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "]."))
+                            logStaff('''❗️ <b>Warn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nUser Warns Now: "+str(userWarns)+"/"+str(settings.Moderation.maxWarns))
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, reply_fromId)
                             db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
-                            bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been banned."))
-                            logStaff('''🔇️ <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
+                            bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned."))
+                            logStaff('''🚷 <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
 
                 elif text.startswith("/mute"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
                         bot.restrictChatMember(group, reply_fromId, until_date=time.time() + 3600)
                         try:
                             reason = text.split(" ", 1)[1]
-                            bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML", reply_to_message_id=reply_msgId)
-                            logStaff('''🔇️ <b>Mute</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason)
+                            bot.sendMessage(group, str("🔇 " + reply_firstName + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                            logStaff('''🔇 <b>Mute</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason)
                         except IndexError:
-                            bot.sendMessage(group, str("🔇️ " + reply_firstName + " has been muted until the next hour."), reply_to_message_id=reply_msgId)
-                            logStaff('''🔇️ <b>Mute</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
+                            bot.sendMessage(group, str("🔇 " + reply_firstName + " has been muted until the next hour."), reply_to_message_id=reply_msgId)
+                            logStaff('''🔇 <b>Mute</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
 
                 elif text.startswith("/kick"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
@@ -439,11 +441,11 @@ def handle(msg):
                             pass
                         try:
                             reason = text.split(" ", 1)[1]
-                            bot.sendMessage(group, str("❗️️ "+reply_firstName+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
-                            logStaff('''❗️️ <b>Kick</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason)
+                            bot.sendMessage(group, str("❕ "+reply_firstName+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                            logStaff('''❕ <b>Kick</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName+"\nReason: "+reason)
                         except IndexError:
-                            bot.sendMessage(group, str("❗️️ "+reply_firstName+" has been kicked."), reply_to_message_id=reply_msgId)
-                            logStaff('''❗️️ <b>Kick</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
+                            bot.sendMessage(group, str("❕ "+reply_firstName+" has been kicked."), reply_to_message_id=reply_msgId)
+                            logStaff('''❕ <b>Kick</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
 
                 elif text.startswith("/ban"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
@@ -459,20 +461,20 @@ def handle(msg):
 
                 elif text.startswith("/unban"):
                     bot.unbanChatMember(group, reply_fromId)
-                    bot.sendMessage(group, "✅️ "+str(reply_firstName)+" unbanned.", reply_to_message_id=reply_msgId)
-                    logStaff('''✅️ <b>Unban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
+                    bot.sendMessage(group, "✅ "+str(reply_firstName)+" unbanned.", reply_to_message_id=reply_msgId)
+                    logStaff('''✅ <b>Unban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
 
                 elif text.startswith("/unwarn"):
                     previousWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
                     if previousWarns > 0:
                         db_users.update({'warns': str(previousWarns-1)}, where('chatId') == reply_fromId)
                         bot.sendMessage(group, "❎ "+reply_firstName+" unwarned.\nHe now has "+str(previousWarns-1)+" warns.", reply_to_message_id=reply_msgId)
-                        logStaff('''❎'️ <b>Unwarn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
+                        logStaff('''❎ <b>Unwarn</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
 
                 elif text.startswith("/unmute"):
                     bot.restrictChatMember(group, reply_fromId, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
-                    bot.sendMessage(group, str("🔈 " + reply_firstName + " unmuted."), reply_to_message_id=reply_msgId)
-                    logStaff('''🔈'️ <b>Unmute</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
+                    bot.sendMessage(group, str("🔊 " + reply_firstName + " unmuted."), reply_to_message_id=reply_msgId)
+                    logStaff('''🔊 <b>Unmute</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: " + from_firstName + " " + from_lastName)
 
                 elif text.startswith("/info"):
                     bot.sendMessage(group, "🙍‍♂️ <b>User Info</b>\nUser: "+reply_firstName+"\nChatID: <code>"+str(reply_fromId)+"</code>\nWarns: "+str(db_users.search(where('chatId') == reply_fromId)[0]['warns']), "HTML")
@@ -490,9 +492,9 @@ def handle(msg):
 
         # Any user message
         cmdtext = text.replace(myusername, "")
-        if text.startswith("@admin"):
+        if "@admin" in text:
             if settings.Bot.useStaffGroup:
-                bot.sendMessage(group, "<i>Call received.</i>", "HTML")
+                bot.sendMessage(group, "🆘 <i>Call received.</i>", "HTML")
                 if isReply:
                     logStaff('''🆘 <b>Staff Call</b>\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + '''</a>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nMessage: "+text)
                     bot.forwardMessage(settings.Bot.staffGroupId, group, reply_msgId)
@@ -554,13 +556,13 @@ def handle(msg):
                     previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                     db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                     userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
-                    bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>spam</b>."), parse_mode="HTML")
-                    logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Spam\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                    bot.sendMessage(group, str("❗️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>spam</b>."), parse_mode="HTML")
+                    logStaff("❗️ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Spam\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, from_id)
                         db_users.update({'warns': "0"}, where('chatId') == from_id)
-                        bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
-                        logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+                        bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                        logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
 
             # Scan Sended Files
             if msgType == "document":
@@ -573,9 +575,14 @@ def handle(msg):
                     file.close()
                     os.remove("file_"+str(msgId))
                     if data['response_code'] == 1:
-                        bot.editMessageText((group, message['message_id']), "File Scan:\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                        if data['positives'] == 0:
+                            bot.editMessageText((group, message['message_id']), "✅ File Scan: Safe\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                        elif data['positives'] < 10:
+                            bot.editMessageText((group, message['message_id']), "⚠️ File Scan: Warning\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                        else:
+                            bot.editMessageText((group, message['message_id']), "🛑️ File Scan: Malware\nAlert " + str(data['positives']) + "/" + str(data['total']))
                     else:
-                        bot.editMessageText((group, message['message_id']), "Could not scan file.")
+                        bot.deleteMessage((group, message['message_id']))
 
             # Detect spam from a fowarded message
             if settings.Moderation.forwardSpamDetect:
@@ -587,13 +594,13 @@ def handle(msg):
                             previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                             db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                             userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
-                            bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>forward from a non whitelisted channel</b>."), parse_mode="HTML")
-                            logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Forward from a non whitelisted channel\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                            bot.sendMessage(group, str("❗️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>forward from a non whitelisted channel</b>."), parse_mode="HTML")
+                            logStaff("❗️ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Forward from a non whitelisted channel\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                             if userWarns >= settings.Moderation.maxWarns:
                                 bot.kickChatMember(group, from_id)
                                 db_users.update({'warns': "0"}, where('chatId') == from_id)
-                                bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
-                                logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+                                bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                                logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
                 except KeyError:
                     pass
 
@@ -606,35 +613,34 @@ def handle(msg):
                     output = imgparse_ai.check("nudity").set_file("file_" + str(msgId))
                     if output["nudity"]["partial"] > 0.4 or output["nudity"]["raw"] > 0.2:
                         found = True
-                        os.remove("file_" + str(msgId))
                         bot.deleteMessage((group, msgId))
                         previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                         db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                         userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
-                        bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>porn media</b>."),parse_mode="HTML")
-                        logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Porn Media\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                        bot.sendMessage(group, str("❗️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>porn media</b>."),parse_mode="HTML")
+                        logStaff("❗️ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Porn Media\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, from_id)
                             db_users.update({'warns': "0"}, where('chatId') == from_id)
-                            bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
-                            logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+                            bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                            logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
 
                 if settings.Moderation.detectViolence and not found:
                     output = imgparse_ai.check("offensive").set_file("file_" + str(msgId))
                     if output["offensive"]["prob"] > 0.3:
                         found = True
-                        os.remove("file_" + str(msgId))
                         bot.deleteMessage((group, msgId))
                         previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                         db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                         userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
-                        bot.sendMessage(group, str("❗️️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>offensive media</b>."), parse_mode="HTML")
-                        logStaff("❗ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Offensive Media\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
+                        bot.sendMessage(group, str("❗️ " + from_firstName + " has been warned [" + str(userWarns) + "/" + str(settings.Moderation.maxWarns) + "] for <b>offensive media</b>."), parse_mode="HTML")
+                        logStaff("❗️ <b>Warn</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Offensive Media\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, from_id)
                             db_users.update({'warns': "0"}, where('chatId') == from_id)
-                            bot.sendMessage(group, str("🔇️ " + from_firstName + " has been banned."))
-                            logStaff("🔇️ <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+                            bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                            logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
+                os.remove("file_" + str(msgId))
 
 
 
