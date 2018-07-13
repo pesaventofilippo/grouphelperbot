@@ -497,7 +497,10 @@ def handle(msg):
                 bot.sendMessage(group, "🆘 <i>Call received.</i>", "HTML")
                 if isReply:
                     logStaff('''🆘 <b>Staff Call</b>\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + '''</a>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nMessage: "+text)
-                    bot.forwardMessage(settings.Bot.staffGroupId, group, reply_msgId)
+                    try:
+                        bot.forwardMessage(settings.Bot.staffGroupId, group, reply_msgId)
+                    except Exception:
+                        pass
                 else:
                     logStaff('''🆘 <b>Staff Call</b>\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + "</a>\nMessage: " + text)
 
@@ -646,6 +649,15 @@ def handle(msg):
                             bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
                             logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
                 os.remove("file_" + str(msgId))
+
+            # Word Blacklist Control
+            for x in settings.Moderation.wordBlacklist:
+                if x in text:
+                    logStaff("🆎 <b>Blacklisted Word</b>\nBy: "+from_firstName)
+                    try:
+                        bot.forwardMessage(settings.Bot.staffGroupId, group, msgId)
+                    except Exception:
+                        pass
 
 
 
