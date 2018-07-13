@@ -255,8 +255,6 @@ def handle(msg):
                 logStaff("☢️ <b>Inactive Users Kick terminated!</b>")
 
 
-
-
         # Creator or Admin or Moderator message
         if getStatus(from_id) in ["creator", "admin", "moderator"]:
             if text.startswith("/warn @"):
@@ -480,7 +478,6 @@ def handle(msg):
                     bot.sendMessage(group, "🙍‍♂️ <b>User Info</b>\nUser: "+reply_firstName+"\nChatID: <code>"+str(reply_fromId)+"</code>\nWarns: "+str(db_users.search(where('chatId') == reply_fromId)[0]['warns']), "HTML")
 
 
-
         # Creator or Admin or Moderator or Manager message
         if getStatus(from_id) in ["creator", "admin", "moderator", "manager"]:
             if isReply:
@@ -548,6 +545,7 @@ def handle(msg):
             data = settings.Messages.rules
             if data != "":
                 bot.sendMessage(group, data, "HTML")
+
 
         # Only Normal User Messages
         elif getStatus(from_id) == "user":
@@ -658,6 +656,11 @@ def handle(msg):
                         bot.forwardMessage(settings.Bot.staffGroupId, group, msgId)
                     except Exception:
                         pass
+
+            # User Name Character Limit
+            if settings.Moderation.controlUserName:
+                if len(from_firstName+from_lastName) > settings.Moderation.userNameCharacterLimit:
+                    bot.sendMessage(group, "🌐 "+from_firstName+", please, set a <b>shorter name</b> in Telegram Settings.", parse_mode="HTML", reply_to_message_id=msgId)
 
 
 

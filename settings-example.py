@@ -24,7 +24,9 @@ class Moderation:
     detectPorn = True
     detectViolence = True
     mustHaveUsername = True
+    controlUserName = True
     maxWarns = 3
+    userNameCharacterLimit = 32
     channelsWhitelist = ["durov", "telegram"]
     wordBlacklist = ["dick", "god"]
 
