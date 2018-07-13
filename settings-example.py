@@ -23,6 +23,7 @@ class Moderation:
     forwardSpamDetect = True
     detectPorn = True
     detectViolence = True
+    mustHaveUsername = True
     maxWarns = 3
     channelsWhitelist = ["durov", "telegram"]
 

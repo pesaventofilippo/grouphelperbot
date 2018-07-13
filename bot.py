@@ -549,6 +549,11 @@ def handle(msg):
         # Only Normal User Messages
         elif getStatus(from_id) == "user":
 
+            # Control username
+            if settings.Moderation.mustHaveUsername:
+                if from_username == "":
+                    bot.sendMessage(group, "🌐 "+from_firstName+", please, set an <b>username</b> in Telegram Settings", parse_mode="HTML", reply_to_message_id=msgId)
+
             # Detect spam from a Telegram Link
             if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text):
                 if settings.Moderation.spamDetect:
