@@ -3,6 +3,7 @@ class Bot:
     groupId = -1001234567890
     useStaffGroup = True
     staffGroupId = -1001234567890
+    language = "en"
 
 
 class Databases:
