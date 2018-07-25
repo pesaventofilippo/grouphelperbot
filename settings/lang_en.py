@@ -47,4 +47,10 @@ dict = {
     "grp_staff_moderators":     "\n\n  👷🏻 <b>Moderators</b>",
     "grp_staff_managers":       "\n\n  🛃 <b>Managers</b>",
     "grp_staff_helpers":        "\n\n  ⛑ <b>Helpers</b>",
+    "grp_set_username":         "🌐  {}, please, set an <b>username</b> in Telegram Settings",
+    "grp_scan_file":            "<i>Scanning File...</i>",
+    "grp_scanned_safe":         "✅ File Scan: Safe\nAlert {}/{}",
+    "grp_scanned_warning":      "⚠️ File Scan: Warning\nAlert {}/{}",
+    "grp_scanned_malware":      "🛑️ File Scan: Malware\\nAlert {}/{}",
+    "grp_shorter_name":        "🌐 {}, please, set a <b>shorter name</b> in Telegram Settings."
 }

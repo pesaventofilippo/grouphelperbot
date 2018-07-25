@@ -1,3 +1,5 @@
+import settings
+
 def getStr(string, args=None):
     import importlib
     locale = importlib.import_module("settings.lang_"+Bot.language)

@@ -12,6 +12,7 @@ myusername = "@" + bot.getMe()['username']
 imgparse_ai = SightengineClient(settings.sightEngine.user, settings.sightEngine.key)
 
 
+
 def updateAdminDatabase(id, status):
     if db_admins.search(where('chatId') == id):
         db_admins.update({'status': status}, where('chatId') == id)
@@ -393,7 +394,7 @@ def handle(msg):
             # Control username
             if settings.Moderation.mustHaveUsername:
                 if from_username == "":
-                    bot.sendMessage(group, "🌐 "+from_firstName+", please, set an <b>username</b> in Telegram Settings", parse_mode="HTML", reply_to_message_id=msgId)
+                    bot.sendMessage(group, _("grp_set_username", [from_firstName]) , parse_mode="HTML", reply_to_message_id=msgId)
 
             # Detect spam from a Telegram Link
             if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text):
@@ -404,7 +405,7 @@ def handle(msg):
             # Scan Sended Files
             if msgType == "document":
                 if settings.Moderation.scanSendedFiles:
-                    message = bot.sendMessage(group, "<i>Scanning File...</i>", parse_mode="HTML", reply_to_message_id=msgId)
+                    message = bot.sendMessage(group, _("grp_scan_file"), parse_mode="HTML", reply_to_message_id=msgId)
                     bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
                     file = open("file_"+str(msgId), "rb")
                     hash = hashlib.sha256(file.read()).hexdigest()
@@ -413,11 +414,11 @@ def handle(msg):
                     os.remove("file_"+str(msgId))
                     if data['response_code'] == 1:
                         if data['positives'] == 0:
-                            bot.editMessageText((group, message['message_id']), "✅ File Scan: Safe\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                            bot.editMessageText((group, message['message_id']), _("grp_scanned_safe", [str(data['positives']), str(data['total'])]))
                         elif data['positives'] < 10:
-                            bot.editMessageText((group, message['message_id']), "⚠️ File Scan: Warning\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                            bot.editMessageText((group, message['message_id']), _("grp_scanned_warning", [str(data['positives']), str(data['total'])]))
                         else:
-                            bot.editMessageText((group, message['message_id']), "🛑️ File Scan: Malware\nAlert " + str(data['positives']) + "/" + str(data['total']))
+                            bot.editMessageText((group, message['message_id']), _("grp_scanned_malware", [str(data['positives']), str(data['total'])]))
                     else:
                         bot.deleteMessage((group, message['message_id']))
 
@@ -464,7 +465,7 @@ def handle(msg):
             # User Name Character Limit
             if settings.Moderation.controlUserName:
                 if len(from_firstName+from_lastName) > settings.Moderation.userNameCharacterLimit:
-                    bot.sendMessage(group, "🌐 "+from_firstName+", please, set a <b>shorter name</b> in Telegram Settings.", parse_mode="HTML", reply_to_message_id=msgId)
+                    bot.sendMessage(group, _("grp_shorter_name", [from_firstName]), parse_mode="HTML", reply_to_message_id=msgId)
 
 print("Bot started...")
 reloadAdmins()
