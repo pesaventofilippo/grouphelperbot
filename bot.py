@@ -171,7 +171,7 @@ def handle(msg):
                     selectedUser_firstName = reply_firstName
                     selectedUser_lastName = reply_lastName
                 else:
-                    if (len(text_split) < 2) or ((text is not "/reload") and not (text.startswith("/tell"))):
+                    if (len(text_split) < 2) or (text == "/reload") or (text.startswith("/tell")):
                         return
                     selectedUser = text_split[1]
                     data = db_users.search(where('username') == selectedUser.replace("@", ""))[0]
