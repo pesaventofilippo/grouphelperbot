@@ -1,4 +1,3 @@
-admins.json
-users.json
-settings.py
+*.json
 __pycache__/
+settings/settings.py
