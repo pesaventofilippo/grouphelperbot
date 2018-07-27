@@ -170,16 +170,15 @@ def handle(msg):
                     selectedUserData = reply_fromId
                     selectedUser_firstName = reply_firstName
                     selectedUser_lastName = reply_lastName
+                    user_link = "<a href=\"tg://user?id=" + str(selectedUserData) + "\">" + selectedUser_firstName + " " + selectedUser_lastName +"</a>"
                 else:
-                    if (len(text_split) < 2) or (text == "/reload") or (text.startswith("/tell")):
-                        return
-                    selectedUser = text_split[1]
-                    data = db_users.search(where('username') == selectedUser.replace("@", ""))[0]
-                    selectedUserData = data['chatId']
-                    selectedUser_firstName = data['firstName']
-                    selectedUser_lastName = data['lastName']
-
-                user_link = "<a href=\"tg://user?id=" + str(selectedUserData) + "\">" + selectedUser_firstName + " " + selectedUser_lastName +"</a>"
+                    if not ((len(text_split) < 2) or (text == "/reload") or (text.startswith("/tell"))):
+                        selectedUser = text_split[1]
+                        data = db_users.search(where('username') == selectedUser.replace("@", ""))[0]
+                        selectedUserData = data['chatId']
+                        selectedUser_firstName = data['firstName']
+                        selectedUser_lastName = data['lastName']
+                        user_link = "<a href=\"tg://user?id=" + str(selectedUserData) + "\">" + selectedUser_firstName + " " + selectedUser_lastName +"</a>"
 
                 if text.startswith("/helper"):
                     if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
