@@ -544,7 +544,7 @@ def handle(msg):
         elif cmdtext == "/rules":
             data = settings.Messages.rules
             if data != "":
-                bot.sendMessage(group, data, "HTML")
+                bot.sendMessage(group, data, parse_mode="HTML", disable_web_page_preview=True)
 
 
         # Only Normal User Messages
