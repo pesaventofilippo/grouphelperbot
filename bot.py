@@ -650,7 +650,7 @@ def handle(msg):
 
             # Word Blacklist Control
             for x in settings.Moderation.wordBlacklist:
-                if x in text:
+                if x in text.lower():
                     logStaff("🆎 <b>Blacklisted Word</b>\nBy: "+from_firstName)
                     try:
                         bot.forwardMessage(settings.Bot.staffGroupId, group, msgId)

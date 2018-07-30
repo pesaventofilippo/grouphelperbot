@@ -28,7 +28,7 @@ class Moderation:
     maxWarns = 3
     userNameCharacterLimit = 32
     channelsWhitelist = ["durov", "telegram"]
-    wordBlacklist = ["dick", "god"]
+    wordBlacklist = ["foo", "bar"]
 
 
 class virusTotal:
