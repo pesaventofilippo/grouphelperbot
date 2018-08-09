@@ -121,7 +121,7 @@ def handle(msg):
                     data = data.replace('{{surname}}', from_lastName)
                     data = data.replace('{{username}}', from_username)
                     data = data.replace('{{group_name}}', bot.getChat(group)['title'])
-                    bot.sendMessage(group, data, "HTML")
+                    bot.sendMessage(group, data, parse_mode="HTML", disable_link_preview=True)
             logStaff('''➕ <b>New User</b>\n-> <a href="tg://user?id='''+str(from_id)+'''">'''+from_firstName+"</a>")
 
 
