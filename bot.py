@@ -380,6 +380,16 @@ def handle(msg):
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 bot.sendMessage(group, "🙍‍♂️ <b>User Info</b>\nUser: "+selectedUser+"\nChatID: <code>"+str(selectedUserData)+"</code>\nWarns: "+str(db_users.search(where('chatId') == selectedUserData)[0]['warns']), "HTML")
 
+            elif text == "/silenceon":
+                settings.Moderation.globalSilenceAcive = True
+                bot.sendMessage(group, "🔇 <b>Global Silence activated!</b>\nNow, only the group staff can write messages.", "HTML")
+                logStaff("🔇 <b>Global Silence On</b>\nBy: " + from_firstName + " " + from_lastName)
+
+            elif text == "/silenceoff":
+                settings.Moderation.globalSilenceAcive = False
+                bot.sendMessage(group, "🔊 <b>Global Silence deactivated!</b>\nNow, all users can write messages.", "HTML")
+                logStaff("🔊 <b>Global Silence Off</b>\nBy: " + from_firstName + " " + from_lastName)
+
             elif isReply:
                 if text.startswith("/warn"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
@@ -549,6 +559,11 @@ def handle(msg):
 
         # Only Normal User Messages
         elif getStatus(from_id) == "user":
+
+            # Global Silence Setting
+            if settings.Moderation.globalSilenceAcive:
+                bot.deleteMessage((group, msgId))
+                return 0
 
             # Control username
             if settings.Moderation.mustHaveUsername:
