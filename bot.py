@@ -286,7 +286,7 @@ def handle(msg):
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, selectedUserData)
                         db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
-                        bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned."))
+                        bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned for max warns reached."))
                         logStaff("🚷 <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
 
             elif text.startswith("/delwarn @"):
@@ -308,7 +308,7 @@ def handle(msg):
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, selectedUserData)
                         db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
-                        bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned."))
+                        bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned for max warns reached."))
                         logStaff("🚷 <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
 
             elif text.startswith("/mute @"):
@@ -418,7 +418,7 @@ def handle(msg):
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, reply_fromId)
                             db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
-                            bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned."), reply_to_message_id=reply_msgId)
+                            bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned for max warns reached."))
                             logStaff('''🚷 <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
 
                 elif text.startswith("/delwarn"):
@@ -438,7 +438,7 @@ def handle(msg):
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, reply_fromId)
                             db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
-                            bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned."))
+                            bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned for max warns reached."))
                             logStaff('''🚷 <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
 
                 elif text.startswith("/mute"):
