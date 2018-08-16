@@ -26,6 +26,11 @@ def updateUserDatabase(id, firstName, lastName, username):
         db_users.insert({'chatId': id, 'firstName': firstName, 'lastName': lastName, 'username': username, 'warns': "0", 'lastMsgDate': int(time.time())})
 
 
+def forgetUser(id):
+    db_users.remove(where('chatId') == id)
+    db_admins.remove(where('chatId') == id)
+
+
 def reloadAdmins():
     db_admins.remove(where('status') == "admin")
     for x in bot.getChatAdministrators(group):
@@ -285,7 +290,7 @@ def handle(msg):
                         logStaff("❗️ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, selectedUserData)
-                        db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
+                        forgetUser(selectedUserData)
                         bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned for max warns reached."))
                         logStaff("🚷 <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
 
@@ -307,7 +312,7 @@ def handle(msg):
                         logStaff("❗️ <b>Warn</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nUser Warns Now: " + str(userWarns) + "/" + str(settings.Moderation.maxWarns))
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, selectedUserData)
-                        db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
+                        forgetUser(selectedUserData)
                         bot.sendMessage(group, str("🚷 " + selectedUser + " has been banned for max warns reached."))
                         logStaff("🚷 <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
 
@@ -350,7 +355,7 @@ def handle(msg):
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
                     bot.kickChatMember(group, selectedUserData)
-                    db_users.update({'warns': "0"}, where('chatId') == selectedUserData)
+                    forgetUser(selectedUserData)
                     try:
                         reason = text_split[2]
                         bot.sendMessage(group, str("🚷 "+selectedUser+" has been banned for <b>"+reason+"</b>."), parse_mode="HTML")
@@ -417,7 +422,7 @@ def handle(msg):
                         forwardStaff(reply_msgId)
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, reply_fromId)
-                            db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
+                            forgetUser(reply_fromId)
                             bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned for max warns reached."))
                             logStaff('''🚷 <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
 
@@ -437,7 +442,7 @@ def handle(msg):
                         bot.deleteMessage((group, reply_msgId))
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, reply_fromId)
-                            db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
+                            forgetUser(reply_fromId)
                             bot.sendMessage(group, str("🚷 " + reply_firstName + " has been banned for max warns reached."))
                             logStaff('''🚷 <b>Ban</b>\nTo: <a href="tg://user?id=''' + str(reply_fromId) + '''">''' + reply_firstName + "</a>\nBy: Bot\nReason: Exceeded max warns")
 
@@ -473,7 +478,7 @@ def handle(msg):
                 elif text.startswith("/ban"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
                         bot.kickChatMember(group, reply_fromId)
-                        db_users.update({'warns': "0"}, where('chatId') == reply_fromId)
+                        forgetUser(reply_fromId)
                         try:
                             reason = text.split(" ", 1)[1]
                             bot.sendMessage(group, str("🚷 "+reply_firstName+" has been banned for <b>"+reason+"</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
@@ -596,8 +601,8 @@ def handle(msg):
                     bot.deleteMessage((group, msgId))
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, from_id)
-                        db_users.update({'warns': "0"}, where('chatId') == from_id)
-                        bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                        forgetUser(from_id)
+                        bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned for max warns reached."))
                         logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
 
             # Scan Sended Files
@@ -635,8 +640,8 @@ def handle(msg):
                             bot.deleteMessage((group, msgId))
                             if userWarns >= settings.Moderation.maxWarns:
                                 bot.kickChatMember(group, from_id)
-                                db_users.update({'warns': "0"}, where('chatId') == from_id)
-                                bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                                forgetUser(from_id)
+                                bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned for max warns reached."))
                                 logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
                 except KeyError:
                     pass
@@ -659,8 +664,8 @@ def handle(msg):
                         bot.deleteMessage((group, msgId))
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, from_id)
-                            db_users.update({'warns': "0"}, where('chatId') == from_id)
-                            bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                            forgetUser(from_id)
+                            bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned for max warns reached."))
                             logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
 
                 if settings.Moderation.detectViolence and not found:
@@ -675,8 +680,8 @@ def handle(msg):
                         bot.deleteMessage((group, msgId))
                         if userWarns >= settings.Moderation.maxWarns:
                             bot.kickChatMember(group, from_id)
-                            db_users.update({'warns': "0"}, where('chatId') == from_id)
-                            bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned."))
+                            forgetUser(from_id)
+                            bot.sendMessage(group, str("🚷 " + from_firstName + " has been banned for max warns reached."))
                             logStaff("🚷 <b>Ban</b>\nTo: " + from_firstName + "\nBy: Bot\nReason: Exceeded max warns")
                 os.remove("file_" + str(msgId))
 
