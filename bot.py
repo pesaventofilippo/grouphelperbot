@@ -317,18 +317,30 @@ def handle(msg):
                         logStaff("🚷 <b>Ban</b>\nTo: " + selectedUser + "\nBy: Bot\nReason: Exceeded max warns")
 
             elif text.startswith("/mute @"):
-                text_split = text.split(" ", 2)
+                text_split = text.split(" ", 3)
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
-                    bot.restrictChatMember(group, selectedUserData, until_date=time.time() + 3600)
                     try:
-                        reason = text_split[2]
-                        bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted for <b>" + reason + "</b> until the next hour."), parse_mode="HTML")
-                        logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason)
+                        hours = text_split[3]
+                        bot.restrictChatMember(group, selectedUserData, until_date=time.time() + (int(hours)*3600))
+                        try:
+                            reason = text_split[2]
+                            bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted for <b>" + reason + "</b> for "+hours+" hours."), parse_mode="HTML")
+                            logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason+"\nHours: "+hours)
+                        except IndexError:
+                            bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted for "+hours+" hours."))
+                            logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName+"\nHours: "+hours)
+
                     except IndexError:
-                        bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted until the next hour."))
-                        logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName)
+                        bot.restrictChatMember(group, selectedUserData, until_date=time.time() + 3600)
+                        try:
+                            reason = text_split[2]
+                            bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted for <b>" + reason + "</b> for 1 hour."), parse_mode="HTML")
+                            logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName + "\nReason: " + reason+"\nHours: 1")
+                        except IndexError:
+                            bot.sendMessage(group, str("🔇 " + selectedUser + " has been muted for 1 hour."))
+                            logStaff("🔇 <b>Mute</b>\nTo: " + selectedUser + "\nBy: " + from_firstName + " " + from_lastName+"\nHours: 1")
 
             elif text.startswith("/kick @"):
                 text_split = text.split(" ", 2)
