@@ -114,9 +114,11 @@ def forwardStaff(message_id):
 def kickInactiveUsers(list):
     for x in list:
         if bot.getChatMember(group, x['chatId'])['status'] != "kicked":
+            time.sleep(1)
             bot.kickChatMember(group, x['chatId'])
-            time.sleep(0.5)
+            time.sleep(1)
             bot.unbanChatMember(group, x['chatId'])
+            time.sleep(5)
 
 
 def handle(msg):
