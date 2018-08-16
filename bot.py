@@ -254,7 +254,6 @@ def handle(msg):
             elif text == "/reload":
                 reloadAdmins()
                 bot.sendMessage(group, "✅ <b>Bot reloaded!</b>", "HTML")
-                logStaff("✅ <b>Bot reloaded!</b>\nBy: "+from_firstName+" "+from_lastName)
 
             elif text.startswith("/kickinactive "):
                 text_split = text.split(" ")
@@ -335,12 +334,9 @@ def handle(msg):
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
-                    try:
-                        bot.kickChatMember(group, selectedUserData)
-                        time.sleep(0.5)
-                        bot.unbanChatMember(group, selectedUserData)
-                    except:
-                        pass
+                    bot.kickChatMember(group, selectedUserData)
+                    time.sleep(0.5)
+                    bot.unbanChatMember(group, selectedUserData)
                     try:
                         reason = text_split[2]
                         bot.sendMessage(group, str("❕ "+selectedUser+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML")
@@ -460,12 +456,9 @@ def handle(msg):
 
                 elif text.startswith("/kick"):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
-                        try:
-                            bot.kickChatMember(group, reply_fromId)
-                            time.sleep(0.5)
-                            bot.unbanChatMember(group, reply_fromId)
-                        except Exception:
-                            pass
+                        bot.kickChatMember(group, reply_fromId)
+                        time.sleep(0.5)
+                        bot.unbanChatMember(group, reply_fromId)
                         try:
                             reason = text.split(" ", 1)[1]
                             bot.sendMessage(group, str("❕ "+reply_firstName+" has been kicked for <b>"+reason+"</b>."), parse_mode="HTML", reply_to_message_id=reply_msgId)
