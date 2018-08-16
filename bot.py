@@ -1,4 +1,4 @@
-﻿import telepot, time, hashlib, requests, os
+﻿import telepot, time, hashlib, requests, os, threading
 from tinydb import TinyDB, where
 from sightengine.client import SightengineClient
 import settings
@@ -109,6 +109,14 @@ def forwardStaff(message_id):
             bot.forwardMessage(settings.Bot.staffGroupId, group, message_id)
         except Exception:
             pass
+
+
+def kickInactiveUsers(list):
+    for x in list:
+        if bot.getChatMember(group, x['chatId'])['status'] != "kicked":
+            bot.kickChatMember(group, x['chatId'])
+            time.sleep(0.5)
+            bot.unbanChatMember(group, x['chatId'])
 
 
 def handle(msg):
@@ -258,11 +266,7 @@ def handle(msg):
                 lastTime = currentTime - diffTime
                 kick_users = db_users.search(where('lastMsgDate')<lastTime)
                 logStaff("☢️ <b>Inactive Users Kick</b>\nStarted by: "+from_firstName+" "+from_lastName+"\nMax. Inactive days: "+days)
-                for x in kick_users:
-                    if bot.getChatMember(group, x['chatId'])['status'] != "kicked":
-                        bot.kickChatMember(group, x['chatId'])
-                        time.sleep(0.5)
-                        bot.unbanChatMember(group, x['chatId'])
+                threading.Thread(target=kickInactiveUsers, args=kick_users).start()
                 logStaff("☢️ <b>Inactive Users Kick terminated!</b>")
 
 
