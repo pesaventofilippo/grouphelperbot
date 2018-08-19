@@ -529,62 +529,49 @@ def handle(msg):
                     logStaff('''🆘 <b>Staff Call</b>\nBy: <a href="tg://user?id=''' + str(from_id) + '''">''' + from_firstName + "</a>\nMessage: " + text)
 
         elif cmdtext == "/staff":
-            message = "🔰️ <b>GROUP STAFF</b> 🔰️"
+            staff = {"founders": "", "admins": "", "moderators": "", "managers": "", "helpers": ""}
 
-            message += "\n\n  👑 <b>Founder</b>"
-            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
-                isEmpty = False
                 try:
-                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['founders'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
-                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
-            if isEmpty:
-                message.replace("\n\n  👑 <b>Founder</b>", "")
+                    staff['founders'] += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n\n  👮🏼 <b>Admins</b>"
-            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
-                isEmpty = False
                 try:
-                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['admins'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
-                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
-            if isEmpty:
-                message.replace("\n\n  👮🏼 <b>Admins</b>", "")
+                    staff['admins'] += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n\n  👷🏻 <b>Moderators</b>"
-            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "moderator")]:
-                isEmpty = False
                 try:
-                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['moderators'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
-                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
-            if isEmpty:
-                message.replace("\n\n  👷🏻 <b>Moderators</b>", "")
+                    staff['moderators'] += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n\n  🛃 <b>Managers</b>"
-            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "manager")]:
-                isEmpty = False
                 try:
-                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['managers'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
-                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
-            if isEmpty:
-                message.replace("\n\n  🛃 <b>Managers</b>", "")
+                    staff['managers'] += "\n        " + bot.getChatMember(group, x)['user']['first_name']
 
-            message += "\n\n  ⛑ <b>Helpers</b>"
-            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
-                isEmpty = False
                 try:
-                    message += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['helpers'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
-                    message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
-            if isEmpty:
-                message.replace("\n\n  ⛑ <b>Helpers</b>", "")
+                    staff['helpers'] += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+
+            message = "🔰️ <b>GROUP STAFF</b> 🔰️"
+            if staff['founders'] != "":
+                message += "\n\n  👑 <b>Founder</b>"+staff['founders']
+            if staff['admins'] != "":
+                message += "\n\n  👮🏼 <b>Admins</b>"+staff['admins']
+            if staff['moderators'] != "":
+                message += "\n\n  👷🏻 <b>Moderators</b>"+staff['moderators']
+            if staff['managers'] != "":
+                message += "\n\n  🛃 <b>Managers</b>"+staff['managers']
+            if staff['helpers'] != "":
+                message += "\n\n  ⛑ <b>Helpers</b>"+staff['helpers']
 
             bot.sendMessage(group, message, parse_mode="HTML")
 
