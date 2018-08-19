@@ -532,39 +532,59 @@ def handle(msg):
             message = "🔰️ <b>GROUP STAFF</b> 🔰️"
 
             message += "\n\n  👑 <b>Founder</b>"
+            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
+                isEmpty = False
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+            if isEmpty:
+                message.replace("\n\n  👑 <b>Founder</b>", "")
 
             message += "\n\n  👮🏼 <b>Admins</b>"
+            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
+                isEmpty = False
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+            if isEmpty:
+                message.replace("\n\n  👮🏼 <b>Admins</b>", "")
 
             message += "\n\n  👷🏻 <b>Moderators</b>"
+            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "moderator")]:
+                isEmpty = False
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+            if isEmpty:
+                message.replace("\n\n  👷🏻 <b>Moderators</b>", "")
 
             message += "\n\n  🛃 <b>Managers</b>"
+            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "manager")]:
+                isEmpty = False
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+            if isEmpty:
+                message.replace("\n\n  🛃 <b>Managers</b>", "")
 
             message += "\n\n  ⛑ <b>Helpers</b>"
+            isEmpty = True
             for x in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
+                isEmpty = False
                 try:
                     message += "\n        @" + bot.getChatMember(group, x)['user']['username']
                 except KeyError:
                     message += "\n        " + bot.getChatMember(group, x)['user']['first_name']
+            if isEmpty:
+                message.replace("\n\n  ⛑ <b>Helpers</b>", "")
 
             bot.sendMessage(group, message, parse_mode="HTML")
 
