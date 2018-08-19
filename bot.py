@@ -1,4 +1,4 @@
-﻿import telepot, time, hashlib, requests, os
+﻿import telepot, time, hashlib, requests, os, threading
 from tinydb import TinyDB, where
 from sightengine.client import SightengineClient
 import settings.settings as settings
