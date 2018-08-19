@@ -1,13 +1,13 @@
 aiohttp==3.3.2
 async-timeout==3.0.0
 attrs==18.1.0
+certifi==2018.8.13
 chardet==3.0.4
 idna==2.7
-idna-ssl==1.0.1
 multidict==4.3.1
 requests==2.19.1
 sightengine==1.4.0
 telepot==12.7
-tinydb==3.9.0.post1
+tinydb==3.10.0
 urllib3==1.23
 yarl==1.2.6

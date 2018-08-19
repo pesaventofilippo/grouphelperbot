@@ -3,6 +3,7 @@ class Bot:
     groupId = -1001234567890
     useStaffGroup = True
     staffGroupId = -1001234567890
+    language = "en"
 
 
 class Databases:
@@ -25,11 +26,10 @@ class Moderation:
     detectViolence = True
     mustHaveUsername = True
     controlUserName = True
-    globalSilenceActive = False
     maxWarns = 3
     userNameCharacterLimit = 32
     channelsWhitelist = ["durov", "telegram"]
-    wordBlacklist = ["foo", "bar"]
+    wordBlacklist = ["dick", "god"]
 
 
 class virusTotal:

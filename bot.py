@@ -1,7 +1,8 @@
-﻿import telepot, time, hashlib, requests, os, threading
+﻿import telepot, time, hashlib, requests, os
 from tinydb import TinyDB, where
 from sightengine.client import SightengineClient
-import settings
+import settings.settings as settings
+from settings.functions import getStr as _
 
 db_users = TinyDB(settings.Databases.users)
 db_admins = TinyDB(settings.Databases.admins)
