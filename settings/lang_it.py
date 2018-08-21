@@ -4,6 +4,7 @@ dict = {
     "grp_warn_reason":          "❗️️ {} è stato ammonito [{}/{}] per <b>{}</b>",
     "log_warn_reason":          "❗️ <b>Warn</b>\nA: {}\nDi: {}\nMotivo: {}\nAmmonizioni utente: {}/{}",
     "log_new_user":             "➕ <b>Nuovo utente</b>\n-> {}",
+    "log_new_user_closed":      "➕ <b>Nuovo utente</b>\n-> {}\nIl gruppo era chiuso, l'ho kickato.",
     "grp_ban_reason":           "🚷 {} è stato bannato per {}.",
     "log_ban_reason":           "🚷 <b>Ban</b>\nA: {}\nDi: {}\nMotivo: {}",
     "grp_ban_no_reason":        "🚷 {} è stato bannato.",
@@ -62,6 +63,10 @@ dict = {
     "log_global_silence_on":    "🔇 <b>Silenzio Globale ON</b>\nDi: {}",
     "grp_global_silence_off":   "🔊 <b>Silenzio Globale disattivato!</b>\nD'ora in poi, tutti gli utenti potranno inviare messaggi.",
     "log_global_silence_off":   "🔊 <b>Silenzio Globale OFF</b>\nDi: {}",
+    "grp_closegroup":           "🚷 <b>Gruppo chiuso!</b>\nD'ora in poi, nessuno potrà entrare in questo gruppo.",
+    "log_closegroup":           "🚷 <b>Gruppo Chiuso</b>\nDi: {}",
+    "grp_opengroup":            "✅ <b>Gruppo aperto!</b>\nD'ora in poi, chiunque potrà entrare in questo gruppo.",
+    "log_opengroup":            "✅ <b>Gruppo Aperto</b>\nDi: {}",
     "cmd_helper":               "/helper",
     "cmd_unhelper":             "/remhelper",
     "cmd_mod":                  "/mod",
@@ -86,5 +91,7 @@ dict = {
     "cmd_staff":                "/staff",
     "cmd_rules":                "/regole",
     "cmd_pin":                  "/fissa",
-    "cmd_unpin":                "/togli"
+    "cmd_unpin":                "/togli",
+    "cmd_closegroup":           "/chiudigruppo",
+    "cmd_opengroup":            "/aprigruppo"
 }

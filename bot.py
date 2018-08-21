@@ -144,15 +144,21 @@ def handle(msg):
 
         # Welcoming message
         if msgType == "new_chat_member":
-            if settings.Moderation.showWelcomeMessage:
-                data = settings.Messages.welcome
-                if data != "":
-                    data = data.replace('{{name}}', from_firstName)
-                    data = data.replace('{{surname}}', from_lastName)
-                    data = data.replace('{{username}}', from_username)
-                    data = data.replace('{{group_name}}', bot.getChat(group)['title'])
-                    bot.sendMessage(group, data, parse_mode="HTML", disable_web_page_preview=True)
-            logStaff(_("log_new_user", [createUserString(from_id, from_firstName, from_lastName)]))
+            if settings.Moderation.groupClosed:
+                bot.kickChatMember(group, from_id)
+                time.sleep(0.5)
+                bot.unbanChatMember(group, from_id)
+                logStaff(_("log_new_user_closed", [createUserString(from_id, from_firstName, from_lastName)]))
+            else:
+                if settings.Moderation.showWelcomeMessage:
+                    data = settings.Messages.welcome
+                    if data != "":
+                        data = data.replace('{{name}}', from_firstName)
+                        data = data.replace('{{surname}}', from_lastName)
+                        data = data.replace('{{username}}', from_username)
+                        data = data.replace('{{group_name}}', bot.getChat(group)['title'])
+                        bot.sendMessage(group, data, parse_mode="HTML", disable_web_page_preview=True)
+                logStaff(_("log_new_user", [createUserString(from_id, from_firstName, from_lastName)]))
 
 
         # Delete all commands
@@ -421,6 +427,16 @@ def handle(msg):
                 settings.Moderation.globalSilenceActive = False
                 bot.sendMessage(group, _("grp_global_silence_off"), "HTML")
                 logStaff(_("log_global_silence_off", [createUserString(from_id, from_firstName, from_lastName)]))
+
+            elif text == _("cmd_closegroup"):
+                settings.Moderation.groupClosed = True
+                bot.sendMessage(group, _("grp_closegroup"), "HTML")
+                logStaff(_("log_closegroup", [createUserString(from_id, from_firstName, from_lastName)]))
+
+            elif text == _("cmd_opengroup"):
+                settings.Moderation.groupClosed = False
+                bot.sendMessage(group, _("grp_opengroup"), "HTML")
+                logStaff(_("log_opengroup", [createUserString(from_id, from_firstName, from_lastName)]))
 
 
             elif isReply:

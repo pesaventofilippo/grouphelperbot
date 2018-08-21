@@ -4,6 +4,7 @@ dict = {
     "log_warn_reason":          "❗️ <b>Warn</b>\nTo: {}\nBy: {}\nReason: {}\nUser Warns Now: {}/{}",
     "log_warn_no_reason":       "❗️ <b>Warn</b>\nTo: {}\nBy: {}\nUser Warns Now: {}/{}",
     "log_new_user":             "➕ <b>New User</b>\n-> {}",
+    "log_new_user_closed":      "➕ <b>New User</b>\n-> {}\nThe group was closed, I kicked him.",
     "grp_ban_reason":           "🚷 {} has been banned for {}.",
     "log_ban_reason":           "🚷 <b>Ban</b>\nTo: {}\nBy: {}\nReason: {}",
     "grp_ban_no_reason":        "🚷 {} has been banned.",
@@ -62,6 +63,10 @@ dict = {
     "log_global_silence_on":    "🔇 <b>Global Silence On</b>\nBy: {}",
     "grp_global_silence_off":   "🔊 <b>Global Silence deactivated!</b>\nNow, all users can write messages.",
     "log_global_silence_off":   "🔊 <b>Global Silence Off</b>\nBy: {}",
+    "grp_closegroup":           "🚷 <b>Group Closed!</b>\nNow, nobody can enter this group.",
+    "log_closegroup":           "🚷 <b>Group Closed</b>\nBy: {}",
+    "grp_opengroup":            "✅ <b>Group Opened!</b>\nNow, everybody can enter this group.",
+    "log_opengroup":            "✅ <b>Group Opened</b>\nBy: {}",
     "cmd_helper":               "/helper",
     "cmd_unhelper":             "/unhelper",
     "cmd_mod":                  "/mod",
@@ -86,5 +91,7 @@ dict = {
     "cmd_staff":                "/staff",
     "cmd_rules":                "/rules",
     "cmd_pin":                  "/pin",
-    "cmd_unpin":                "/unpin"
+    "cmd_unpin":                "/unpin",
+    "cmd_closegroup":           "/closegroup",
+    "cmd_opengroup":            "/opengroup"
 }
