@@ -544,31 +544,31 @@ def handle(msg):
 
             for x in [x["chatId"] for x in db_admins.search(where('status') == "creator")]:
                 try:
-                    staff['founders'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['founders'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], bot.getChatMember(group, x)['user']['last_name'])
                 except KeyError:
                     staff['founders'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], "")
 
             for x in [x["chatId"] for x in db_admins.search(where('status') == "admin")]:
                 try:
-                    staff['admins'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['admins'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], bot.getChatMember(group, x)['user']['last_name'])
                 except KeyError:
                     staff['admins'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], "")
 
             for x in [x["chatId"] for x in db_admins.search(where('status') == "moderator")]:
                 try:
-                    staff['moderators'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['moderators'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], bot.getChatMember(group, x)['user']['last_name'])
                 except KeyError:
                     staff['moderators'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], "")
 
             for x in [x["chatId"] for x in db_admins.search(where('status') == "manager")]:
                 try:
-                    staff['managers'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['managers'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], bot.getChatMember(group, x)['user']['last_name'])
                 except KeyError:
                     staff['managers'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], "")
 
             for x in [x["chatId"] for x in db_admins.search(where('status') == "helper")]:
                 try:
-                    staff['helpers'] += "\n        @" + bot.getChatMember(group, x)['user']['username']
+                    staff['helpers'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], bot.getChatMember(group, x)['user']['last_name'])
                 except KeyError:
                     staff['helpers'] += "\n        " + createUserString(x, bot.getChatMember(group, x)['user']['first_name'], "")
 
