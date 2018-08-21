@@ -26,6 +26,7 @@ class Moderation:
     detectViolence = True
     mustHaveUsername = True
     controlUserName = True
+    globalSilenceActive = False
     maxWarns = 3
     userNameCharacterLimit = 32
     channelsWhitelist = ["durov", "telegram"]

@@ -2,7 +2,7 @@ import settings
 
 def getStr(string, args=None):
     import importlib
-    locale = importlib.import_module("settings.lang_"+Bot.language)
+    locale = importlib.import_module("settings.lang_"+settings.settings.Bot.language)
     if string in locale.dict:
         if args == None:
             return locale.dict[string]
