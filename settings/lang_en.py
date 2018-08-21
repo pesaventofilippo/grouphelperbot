@@ -84,5 +84,7 @@ dict = {
     "cmd_silenceoff":           "/silenceoff",
     "cmd_del":                  "/del",
     "cmd_staff":                "/staff",
-    "cmd_rules":                "/rules"
+    "cmd_rules":                "/rules",
+    "cmd_pin":                  "/pin",
+    "cmd_unpin":                "/unpin"
 }

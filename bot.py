@@ -281,6 +281,13 @@ def handle(msg):
                 logStaff(_("bot_start_inactive_kick", [createUserString(from_id, from_firstName, from_lastName), days]))
                 threading.Thread(target=kickInactiveUsers(kick_users), args=kick_users).start()
 
+            elif text == _("cmd_pin"):
+                if isReply:
+                    bot.pinChatMessage(group, reply_msgId)
+
+            elif text == _("cmd_unpin"):
+                bot.unpinChatMessage(group)
+
 
         # Creator or Admin or Moderator message
         if getStatus(from_id) in ["creator", "admin", "moderator"]:
