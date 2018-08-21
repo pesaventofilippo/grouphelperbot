@@ -709,10 +709,9 @@ def handle(msg):
                         os.remove("file_" + str(msgId))
 
             # Word Blacklist Control
-            for x in settings.Moderation.wordBlacklist:
-                if x in text.lower():
-                    logStaff(_("log_blacklist_word", [createUserString(from_id, from_firstName, from_lastName)]))
-                    forwardStaff(msgId)
+            if any(word in text.lower() for word in settings.Moderation.wordBlacklist):
+                logStaff(_("log_blacklist_word", [createUserString(from_id, from_firstName, from_lastName)]))
+                forwardStaff(msgId)
 
             # User Name Character Limit
             if settings.Moderation.controlUserName:
