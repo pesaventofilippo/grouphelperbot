@@ -466,10 +466,10 @@ def handle(msg):
                         userWarns = int(db_users.search(where('chatId') == reply_fromId)[0]['warns'])
                         try:
                             reason = text.split(" ", 1)[1]
-                            bot.sendMessage(group, _("grp_warn_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), str(userWarns), str(settings.Moderation.maxWarns), reason]), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                            bot.sendMessage(group, _("grp_warn_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), str(userWarns), str(settings.Moderation.maxWarns), reason]), parse_mode="HTML")
                             logStaff(_("log_warn_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), createUserString(from_id, from_firstName, from_lastName), reason, str(userWarns), str(settings.Moderation.maxWarns)]))
                         except IndexError:
-                            bot.sendMessage(group, _("grp_warn_no_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), str(userWarns), str(settings.Moderation.maxWarns)]), parse_mode="HTML", reply_to_message_id=reply_msgId)
+                            bot.sendMessage(group, _("grp_warn_no_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), str(userWarns), str(settings.Moderation.maxWarns)]), parse_mode="HTML")
                             logStaff(_("log_warn_no_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), createUserString(from_id, from_firstName, from_lastName), str(userWarns), str(settings.Moderation.maxWarns)]))
                         forwardStaff(reply_msgId)
                         bot.deleteMessage((group, reply_msgId))
