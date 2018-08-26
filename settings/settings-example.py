@@ -34,6 +34,16 @@ class Moderation:
     wordBlacklist = ["dick", "god"]
 
 
+class BlockedMedia:
+    text = False
+    gif = False
+    contact = True
+    location = False
+    document = False
+    game = False
+    audio = False
+
+
 class virusTotal:
     url = 'https://www.virustotal.com/vtapi/v2/file/report'
     apikey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'

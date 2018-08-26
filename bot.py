@@ -132,6 +132,15 @@ def createUserString(uid, fname, lname):
     return string
 
 
+def isGif(msg):
+    try:
+        x = msg['animation']
+        return True
+    except KeyError:
+        return False
+
+
+
 def handle(msg):
     chatId, msgId, msgType, text,\
     from_id, from_firstName, from_lastName, from_username,\
@@ -623,6 +632,36 @@ def handle(msg):
                 bot.deleteMessage((group, msgId))
                 return 0
 
+            # Check for blocked media types
+            if settings.BlockedMedia.text and msgType == "text":
+                bot.deleteMessage((group, msgId))
+                return 0
+
+            if settings.BlockedMedia.gif and isGif(msg):
+                bot.deleteMessage((group, msgId))
+                return 0
+
+            if settings.BlockedMedia.contact and msgType == "contact":
+                bot.deleteMessage((group, msgId))
+                return 0
+
+            if settings.BlockedMedia.location and msgType == "location":
+                bot.deleteMessage((group, msgId))
+                return 0
+
+            if settings.BlockedMedia.document and msgType == "document":
+                bot.deleteMessage((group, msgId))
+                return 0
+
+            if settings.BlockedMedia.game and msgType == "game":
+                bot.deleteMessage((group, msgId))
+                return 0
+
+            if settings.BlockedMedia.audio and msgType == "audio":
+                bot.deleteMessage((group, msgId))
+                return 0
+
+
             # Control username
             if settings.Moderation.mustHaveUsername:
                 if from_username == "":
@@ -645,7 +684,7 @@ def handle(msg):
                         logStaff(_("log_ban_reason", [createUserString(from_id, from_firstName, from_lastName),  createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
 
             # Scan Sended Files
-            if msgType == "document":
+            if msgType == "document" and not isGif(msg):
                 if settings.Moderation.scanSendedFiles:
                     message = bot.sendMessage(group, _("grp_scan_file"), parse_mode="HTML", reply_to_message_id=msgId)
                     bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
