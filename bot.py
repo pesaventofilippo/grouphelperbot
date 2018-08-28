@@ -674,7 +674,7 @@ def handle(msg):
                     db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                     userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                     bot.sendMessage(group, _("grp_warn_reason", [createUserString(from_id, from_firstName, from_lastName), str(userWarns), str(settings.Moderation.maxWarns),  "spam"]), parse_mode="HTML")
-                    logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), str(userWarns), str(settings.Moderation.maxWarns)]))
+                    logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], myname, ""), "spam", str(userWarns), str(settings.Moderation.maxWarns)]))
                     forwardStaff(msgId)
                     bot.deleteMessage((group, msgId))
                     if userWarns >= settings.Moderation.maxWarns:
