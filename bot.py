@@ -690,9 +690,9 @@ def handle(msg):
                     bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
                     file = open("file_"+str(msgId), "rb")
                     hash = hashlib.sha256(file.read()).hexdigest()
-                    data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
                     file.close()
-                    os.remove("file_"+str(msgId))
+                    os.remove("file_" + str(msgId))
+                    data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
                     if data['response_code'] == 1:
                         if data['positives'] == 0:
                             bot.editMessageText((group, message['message_id']), _("grp_scanned_safe", [str(data['positives']), str(data['total'])]))
@@ -761,7 +761,7 @@ def handle(msg):
                             db_users.update({'warns': 0}, where('chatId') == from_id)
                             bot.sendMessage(group, _("grp_ban_reason", [createUserString(from_id, from_firstName, from_lastName), _("str_max_warns")]), parse_mode="HTML")
                             logStaff(_("log_ban_reason", [createUserString(from_id, from_firstName, from_lastName), _("str_max_warns")]))
-                        os.remove("file_" + str(msgId))
+                os.remove("file_" + str(msgId))
 
             # Word Blacklist Control
             if any(word in text.lower() for word in settings.Moderation.wordBlacklist):
