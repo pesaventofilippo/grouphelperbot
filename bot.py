@@ -349,7 +349,7 @@ def handle(msg):
                         logStaff(_("log_ban_reason", [selectedUser, createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
 
             elif text.startswith(_("cmd_mute") + " @"):
-                text_split = text.split(" ", 2)
+                text_split = text.split(" ", 1)
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 if not ((getStatus(selectedUserData) == "creator") or (getStatus(selectedUserData) == "admin")):
@@ -418,7 +418,7 @@ def handle(msg):
                 selectedUser = text_split[1]
                 selectedUserData = db_users.search(where('username') == selectedUser.replace("@", ""))[0]['chatId']
                 bot.restrictChatMember(group, selectedUserData, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
-                bot.sendMessage(group, _("log_unmute", [selectedUser]))
+                bot.sendMessage(group, _("grp_unmute", [selectedUser]))
                 logStaff(_("log_unmute", [selectedUser, createUserString(from_id, from_firstName, from_lastName)]))
 
             elif text.startswith(_("cmd_info") + " @"):
