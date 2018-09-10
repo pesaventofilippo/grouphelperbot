@@ -1,17 +1,22 @@
-﻿import telepot, time, hashlib, requests, os, threading
+﻿import telepot, time, hashlib, requests, os, threading, sys
 from tinydb import TinyDB, where
 from sightengine.client import SightengineClient
-import settings.settings as settings
 from settings.functions import getStr as _
+try:
+    import settings.settings as settings
+except ModuleNotFoundError:
+    print("Error: file 'settings/settings.py' not found.\nPlease create this file.")
+    sys.exit(1)
 
 db_users = TinyDB(settings.Databases.users)
 db_admins = TinyDB(settings.Databases.admins)
-bot = telepot.Bot(settings.Bot.token)
 group = settings.Bot.groupId
-myusername = "@" + bot.getMe()['username']
-myname = bot.getMe()['first_name']
-imgparse_ai = SightengineClient(settings.sightEngine.user, settings.sightEngine.key)
-
+try:
+    bot = telepot.Bot(settings.Bot.token)
+    imgparse_ai = SightengineClient(settings.sightEngine.user, settings.sightEngine.key)
+except Exception:
+    print("An error occurred with some settings.")
+    sys.exit(1)
 
 
 def updateAdminDatabase(id, status):
@@ -324,7 +329,7 @@ def handle(msg):
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, selectedUserData)
                         bot.sendMessage(group, _("grp_ban_reason", [selectedUser, _("str_max_warns")]))
-                        logStaff(_("log_ban_reason", [selectedUser, createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
+                        logStaff(_("log_ban_reason", [selectedUser, createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_max_warns")]))
 
             elif text.startswith(_("cmd_delwarn") + " @"):
                 bot.deleteMessage((group, reply_msgId))
@@ -346,7 +351,7 @@ def handle(msg):
                         bot.kickChatMember(group, selectedUserData)
                         db_users.update({'warns': 0}, where('chatId') == selectedUserData)
                         bot.sendMessage(group, _("grp_ban_reason", [selectedUser, _("str_max_warns")]))
-                        logStaff(_("log_ban_reason", [selectedUser, createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
+                        logStaff(_("log_ban_reason", [selectedUser, createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_max_warns")]))
 
             elif text.startswith(_("cmd_mute") + " @"):
                 text_split = text.split(" ", 1)
@@ -466,7 +471,7 @@ def handle(msg):
                             bot.kickChatMember(group, reply_fromId)
                             db_users.update({'warns': 0}, where('chatId') == reply_fromId)
                             bot.sendMessage(group, _("grp_ban_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), _("str_max_warns")]))
-                            logStaff(_("log_ban_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
+                            logStaff(_("log_ban_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_max_warns")]))
 
                 elif text.startswith(_("cmd_delwarn")):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
@@ -486,7 +491,7 @@ def handle(msg):
                             bot.kickChatMember(group, reply_fromId)
                             db_users.update({'warns': 0}, where('chatId') == reply_fromId)
                             bot.sendMessage(group, _("grp_ban_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), _("str_max_warns")]))
-                            logStaff(_("log_ban_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
+                            logStaff(_("log_ban_reason", [createUserString(reply_fromId, reply_firstName, reply_lastName), createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_max_warns")]))
 
                 elif text.startswith(_("cmd_mute")):
                     if not ((getStatus(reply_fromId) == "creator") or (getStatus(reply_fromId) == "admin")):
@@ -561,7 +566,7 @@ def handle(msg):
 
 
         # Any user message
-        cmdtext = text.replace(myusername, "")
+        cmdtext = text.replace("@" + bot.getMe()['username'], "")
         if "@admin" in text:
             if settings.Bot.useStaffGroup:
                 bot.sendMessage(group, _("grp_staff_call"), "HTML")
@@ -674,14 +679,14 @@ def handle(msg):
                     db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                     userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                     bot.sendMessage(group, _("grp_warn_reason", [createUserString(from_id, from_firstName, from_lastName), str(userWarns), str(settings.Moderation.maxWarns),  "spam"]), parse_mode="HTML")
-                    logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], myname, ""), "spam", str(userWarns), str(settings.Moderation.maxWarns)]))
+                    logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), "spam", str(userWarns), str(settings.Moderation.maxWarns)]))
                     forwardStaff(msgId)
                     bot.deleteMessage((group, msgId))
                     if userWarns >= settings.Moderation.maxWarns:
                         bot.kickChatMember(group, from_id)
                         db_users.update({'warns': 0}, where('chatId') == from_id)
                         bot.sendMessage(group, _("grp_ban_reason", [createUserString(from_id, from_firstName, from_lastName), _("str_max_warns")]))
-                        logStaff(_("log_ban_reason", [createUserString(from_id, from_firstName, from_lastName),  createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
+                        logStaff(_("log_ban_reason", [createUserString(from_id, from_firstName, from_lastName),  createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_max_warns")]))
 
             # Scan Sended Files
             if msgType == "document" and not isGif(msg):
@@ -689,10 +694,10 @@ def handle(msg):
                     message = bot.sendMessage(group, _("grp_scan_file"), parse_mode="HTML", reply_to_message_id=msgId)
                     bot.download_file(msg['document']['file_id'], "file_"+str(msgId))
                     file = open("file_"+str(msgId), "rb")
-                    hash = hashlib.sha256(file.read()).hexdigest()
+                    file_hash = hashlib.sha256(file.read()).hexdigest()
                     file.close()
                     os.remove("file_" + str(msgId))
-                    data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': hash}).json()
+                    data = requests.get(settings.virusTotal.url, params={'apikey': settings.virusTotal.apikey, 'resource': file_hash}).json()
                     if data['response_code'] == 1:
                         if data['positives'] == 0:
                             bot.editMessageText((group, message['message_id']), _("grp_scanned_safe", [str(data['positives']), str(data['total'])]))
@@ -713,14 +718,14 @@ def handle(msg):
                             db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                             userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                             bot.sendMessage(group, _("grp_warn_reason", [createUserString(from_id, from_firstName, from_lastName), str(userWarns), str(settings.Moderation.maxWarns), _("str_forward")]), parse_mode="HTML")
-                            logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], myname, ""), _("str_forward"), str(userWarns), str(settings.Moderation.maxWarns)]))
+                            logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_forward"), str(userWarns), str(settings.Moderation.maxWarns)]))
                             forwardStaff(msgId)
                             bot.deleteMessage((group, msgId))
                             if userWarns >= settings.Moderation.maxWarns:
                                 bot.kickChatMember(group, from_id)
                                 db_users.update({'warns': 0}, where('chatId') == from_id)
                                 bot.sendMessage(group, _("grp_ban_reason", [createUserString(from_id, from_firstName, from_lastName), _("str_max_warns")]), parse_mode="HTML")
-                                logStaff(_("log_ban_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], myname, ""), _("str_max_warns")]))
+                                logStaff(_("log_ban_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_max_warns")]))
                 except KeyError:
                     pass
 
@@ -732,12 +737,13 @@ def handle(msg):
                 if settings.Moderation.detectPorn and not found:
                     output = imgparse_ai.check("nudity").set_file("file_" + str(msgId))
                     if output["nudity"]["partial"] > 0.4 or output["nudity"]["raw"] > 0.2:
+                        os.remove("file_" + str(msgId))
                         found = True
                         previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                         db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                         userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                         bot.sendMessage(group, _("grp_warn_reason", [createUserString(from_id, from_firstName, from_lastName), str(userWarns), str(settings.Moderation.maxWarns), _("str_porn")]), parse_mode="HTML")
-                        logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], myname, ""), _("str_porn"), str(userWarns), str(settings.Moderation.maxWarns)]))
+                        logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_porn"), str(userWarns), str(settings.Moderation.maxWarns)]))
                         forwardStaff(msgId)
                         bot.deleteMessage((group, msgId))
                         if userWarns >= settings.Moderation.maxWarns:
@@ -749,11 +755,12 @@ def handle(msg):
                 if settings.Moderation.detectViolence and not found:
                     output = imgparse_ai.check("offensive").set_file("file_" + str(msgId))
                     if output["offensive"]["prob"] > 0.3:
+                        os.remove("file_" + str(msgId))
                         previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                         db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
                         userWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                         bot.sendMessage(group, _("grp_warn_reason", [createUserString(from_id, from_firstName, from_lastName), str(userWarns), str(settings.Moderation.maxWarns), _("str_offensive")]), parse_mode="HTML")
-                        logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], myname, ""), _("str_offensive"), str(userWarns), str(settings.Moderation.maxWarns)]))
+                        logStaff(_("log_warn_reason", [createUserString(from_id, from_firstName, from_lastName), createUserString(bot.getMe()['id'], bot.getMe()['first_name'], ""), _("str_offensive"), str(userWarns), str(settings.Moderation.maxWarns)]))
                         forwardStaff(msgId)
                         bot.deleteMessage((group, msgId))
                         if userWarns >= settings.Moderation.maxWarns:
@@ -761,6 +768,7 @@ def handle(msg):
                             db_users.update({'warns': 0}, where('chatId') == from_id)
                             bot.sendMessage(group, _("grp_ban_reason", [createUserString(from_id, from_firstName, from_lastName), _("str_max_warns")]), parse_mode="HTML")
                             logStaff(_("log_ban_reason", [createUserString(from_id, from_firstName, from_lastName), _("str_max_warns")]))
+                    os.remove("file_" + str(msgId))
                 os.remove("file_" + str(msgId))
 
             # Word Blacklist Control
@@ -775,8 +783,8 @@ def handle(msg):
 
 
 
-print("Bot started...")
 reloadAdmins()
+print("Bot started...")
 bot.message_loop({'chat': handle})
 while True:
     time.sleep(60)
