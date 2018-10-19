@@ -673,7 +673,7 @@ def handle(msg):
                     bot.sendMessage(group, "🌐 "+from_firstName+", please, set an <b>username</b> in Telegram Settings", parse_mode="HTML", reply_to_message_id=msgId)
 
             # Detect spam from a Telegram Link
-            if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text):
+            if ("t.me/" in text) or ("t.dog/" in text) or ("telegram.me/" in text) or ("chat.whatsapp.com/" in text):
                 if settings.Moderation.spamDetect:
                     previousWarns = int(db_users.search(where('chatId') == from_id)[0]['warns'])
                     db_users.update({'warns': str(previousWarns + 1)}, where('chatId') == from_id)
